@@ -1,0 +1,9 @@
+[submodule "third-party/Box2D"]
+	path = third-party/Box2D
+	url = https://github.com/erincatto/Box2D.git
+[submodule "third-party/clip2tri"]
+	path = third-party/clip2tri
+	url = https://github.com/raptor/clip2tri.git
+[submodule "third-party/googletest"]
+	path = third-party/googletest
+	url = https://github.com/google/googletest.git
