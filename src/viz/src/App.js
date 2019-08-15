@@ -87,19 +87,19 @@ function ifproddev(button, alternative) {
     return {tempate_id: template_id, task_index: task_index};
   }
 
-function set_title() {
-  function detect_title() {
+function setTitle() {
+  function detectTitle() {
     const state = getStateForUrl();
     if (state.task_index) return 'PHYRE - Task ' + state.tempate_id + ':' + state.task_index;
     if (state.tempate_id) return 'PHYRE - Template ' + state.tempate_id;
     return 'PHYRE Player';
   }
-  document.title = detect_title();
+  document.title = detectTitle();
 }
 
 function navigate(new_hash) {
   window.history.pushState(null, null, new_hash);
-  set_title();
+  setTitle();
 }
 
 function filterTaskIds(all_task_ids, task_id_prefix) {
@@ -398,8 +398,24 @@ class WorldWithControls extends Component {
   }
 
   renderHeader() {
-    if (window.phyre_config.mode !== 'demo' || this.state.task_id_prefix) {
+    if (window.phyre_config.mode !== 'demo') {
       return "";
+    }
+    if (this.state.task_id_prefix.endsWith(':')) {
+      return <Message className='dataset_info'>
+      <p>
+        Below are 100 modifications of a single task. These minor
+        modifications let us benchmark a weak form of "within-template"
+        generalization as opposed to a more challenging "cross-template"
+        generalization.
+        See{" "}
+        <a href="https://research.fb.com/publications/phyre-a-new-benchmark-for-physical-reasoning/">the paper</a>
+        {" "}for details.
+        </p>
+      <p>
+        Click any task to try to solve or see a pre-computed solution.
+      </p>
+    </Message>
     }
     return <Message className='dataset_info'>
       <b><a href="http://phyre.ai">PHYRE</a></b> is a benchmark for physical reasoning.
@@ -464,6 +480,7 @@ class TaskView extends Component {
       task_id: this.props.task_id,
       draw_mode: DrawMode.BALL,
       simulation_requested: false,
+      has_user_input: false,
       meta_task: null,
       error: null,
       task_ids: null,
@@ -485,6 +502,12 @@ class TaskView extends Component {
         console.log('meta', meta_task);
         this.setState({meta_task: meta_task}, function() {
           this.refs.canvas.setDrawMode(this.state.draw_mode);
+          if (window.phyre_config.mode !== 'dev') {
+            if (this.getLastAction()) {
+              console.log('Reload');
+              this.refs.canvas.setUserInput(this.getLastAction());
+            }
+          }
         });
       }
     });
@@ -511,6 +534,12 @@ class TaskView extends Component {
     this.setState(prevState => ({cycle_id: prevState.cycle_id + 1}));
   }
 
+  getLastAction() {
+    if (this.state.meta_task && this.state.meta_task.task.taskId === window.last_action_task_id) {
+      return window.last_action;
+    }
+  }
+
   onSimulationLoaded(task_simulation_meta) {
     if (!this.maybeReportThriftError(task_simulation_meta)) {
       const task_simulation = task_simulation_meta.simulation;
@@ -535,6 +564,7 @@ class TaskView extends Component {
     } else {
       const user_input = this.refs.canvas.getUserInput();
       window.last_action = user_input;
+      window.last_action_task_id = this.state.meta_task.task.taskId;
       // If not set, assume dilate is true.
       dilate = dilate === false ? false : true;
       getClient('simulate_task_by_id')(
@@ -552,8 +582,8 @@ class TaskView extends Component {
       });
     } else {
       this.setState({show_user_input_buttons: false});
-      if (window.last_action) {
-        this.refs.canvas.setUserInput(window.last_action);
+      if (this.getLastAction()) {
+        this.refs.canvas.setUserInput(this.getLastAction());
       }
     }
   }
@@ -574,6 +604,17 @@ class TaskView extends Component {
     this.refs.canvas.setUserInput(this.state.meta_task.task.solutions[0]);
   }
 
+  onUserInputChanged() {
+    const user_input = this.refs.canvas.getUserInput();
+    const is_empty =
+      user_input.polygons.length === 0 &&
+      user_input.balls.length === 0 &&
+      user_input.flattened_point_list.length === 0;
+    this.setState({ has_user_input: !is_empty });
+  }
+  onCleanActions() {
+    this.refs.canvas.cleanUserInput();
+  }
   maybeReportThriftError(maybe_exception) {
     if (maybe_exception.message) {
         this.setState({error: maybe_exception.message});
@@ -616,9 +657,26 @@ class TaskView extends Component {
     return data["known_solutions"].map(code => getButton.bind(this)(code));
   }
 
+  renderHeader() {
+    if (window.phyre_config.mode !== 'demo') return "";
+    return <Message className='dataset_info'>
+      <p>
+        Each task has a <b>goal</b> and an <b>initial scene</b>. The agent intoduces
+        one or more balls to the scene and then the simulation starts. The agent
+        {" "}<i>wins</i>{" "} if during the simulation the condition is met for 3
+        seconds or more.
+      </p>
+      <p>
+        Below you can either load a pre-computed solution or try to solve the
+        task yourself by adding balls to the scene with the mouse.
+      </p>
+    </Message>
+  }
+
   renderDescription(verbose) {
     const meta_task = this.state.meta_task;
     let description = [<span key="descr">{meta_task.task.description}<br /></span>];
+
 
     if (verbose) {
       if (meta_task.template_params) {
@@ -628,11 +686,19 @@ class TaskView extends Component {
         description.push(ifproddev(<Teaser key="eval_stats" caption="Eval stats" text={meta_task.text_eval_info} />))
       }
     }
+    if (window.phyre_config.mode === 'demo') {
+      description = meta_task.task.description;
+      if (meta_task.task.tier === "BALL") {
+        description = "Add one ball to " + description.toLowerCase();
+      } else {
+        description = "Add two balls to " + description.toLowerCase();
+      }
+    }
     const body = ifproddev(
       <div className='status-description'>
         <b>Task ({ this.state.task_id}):</b> {description}<br /></div>,
       <div className='status-description'>
-        <b>Task {this.state.task_id}</b><div>{ description }</div></div>
+        <div><b>Goal:</b> {description}</div></div>
     );
     return body
   }
@@ -682,9 +748,10 @@ class TaskView extends Component {
     if (!this.state.simulation_requested) {
       const if_actions_on = (button) => (this.state.show_user_input_buttons ? button : "");
       const if_solution_on = (button) => if_actions_on(this.state.meta_task.task.solutions ? button : "");
+      const if_has_user_input = (button) => if_actions_on(this.state.has_user_input ? button : "");
       const if_last_input = (button) => ifdev(
         button,
-        window.last_action ? button : ""
+        this.getLastAction() ? button : ""
       );
       const proddev_version = <div>
         {this.renderDescription(true)}
@@ -706,7 +773,7 @@ class TaskView extends Component {
       const demo_version = <div>
           {this.renderDescription(true)}
           <Button.Group size="tiny" className='buttonblock'>
-            {if_actions_on(if_last_input(<Button onClick={this.onLoadLastInputClick.bind(this)}>Load last attempt</Button>))}
+            {if_has_user_input(<Button onClick={this.onCleanActions.bind(this)}>Clean actions</Button>)}
             {this.renderTierSolutionButton()}
             <Button primary onClick={this.onSimulationRequestClick.bind(this, false, false)}>Simulate</Button>
           </Button.Group>
@@ -728,7 +795,6 @@ class TaskView extends Component {
     const solvedTask = this.state.task_simulation.isSolution
     if (window.phyre_config.mode === 'demo') {
       let demoStatus;
-      console.log(this.state);
       if (this.state.has_occlusion === "yes") {
         demoStatus =  <span>The action is <b>invalid</b>: it occludes scene bodies.</span>
       } else if (solvedTask) {
@@ -737,18 +803,14 @@ class TaskView extends Component {
           demoStatus = <span>The action <b>doesn't solve</b> the task.</span>
       }
       return <div>
-        {this.renderDescription(false)}
-        <div>
+        <div className='simulation-result'>
         {demoStatus}
         {" "}Frame: {tick}{ifdev(" Fps: " + fps)}
         </div>
-        <br />
-        {
-          ifproddev(
-            <Button onClick={this.reloadLevel.bind(this)}>Reload level</Button>,
-            <Button onClick={this.reloadLevel.bind(this)} size="tiny">Reload level</Button>
-          )
-        }
+        <Button.Group size="tiny" className='buttonblock'>
+          <Button onClick={this.reloadLevel.bind(this)}>Reload level</Button>
+        </Button.Group>
+        <div className='instructions'>{this.renderDescription(false)}</div>
       </div>;
     }
     return <div>
@@ -812,12 +874,14 @@ class TaskView extends Component {
         scene={current_scene}
         width={width}
         height={height}
+        onUserInputChanged={this.onUserInputChanged.bind(this)}
         allow_drawing={!this.state.simulation_requested} />
       </div>;
   }
 
   render() {
     return <div>
+      <div className="World-header">{this.renderHeader()}</div>
       <div className="World-status">{this.renderStatus()}</div>
       <div className="World-canvas">{this.renderCanvas()}</div>
       {ifdev(<div className="World-rendered">{this.renderRenderedImage()}</div>)}
@@ -832,7 +896,7 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener('hashchange', this.setStateForUrl.bind(this), false);
-    set_title();
+    setTitle();
   }
 
   componentWillUnmount() {

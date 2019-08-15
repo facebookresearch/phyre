@@ -230,7 +230,13 @@ export class Canvas extends Component {
         + " balls.");
       this.setState({
         user_polygons: user_input.polygons,
-        user_balls: user_input.balls})
+        user_balls: user_input.balls},
+        () => this.props.onUserInputChanged(),
+        )
+    }
+
+    this.cleanUserInput = function() {
+      this.setUserInput({flattened_point_list: [], polygons: [], balls: []});
     }
 
     this.setDrawMode = function(new_draw_mode) {
@@ -322,6 +328,7 @@ export class Canvas extends Component {
             x: first_click_real.x - active_object.position.x,
             y: first_click_real.y - active_object.position.y
           };
+          this.props.onUserInputChanged();
         }
       }
     }.bind(this));

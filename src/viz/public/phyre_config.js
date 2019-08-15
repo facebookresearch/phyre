@@ -14,5 +14,5 @@
 
 /* This config is only loaded when development React server is used. */
 window.phyre_config = {
-    mode: 'dev'
+    mode: 'demo'
 }

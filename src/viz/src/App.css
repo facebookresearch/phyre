@@ -44,31 +44,33 @@ limitations under the License.
 .World-status .ui.segment {
   min-height: 130px;
 }
+.World-header {
+  padding: 10px 10px 0 10px;
+}
 .mode_demo .World-status {
-  min-height: 150px;
+  min-height: 140px;
 }
 .mode_demo .World-status .ui.segment {
-  min-height: 130px;
-}
-.mode_demo .World-status {
-  font-size: 80%;
-}
-.mode_demo .World-status .status-description b {
-  display: block;
-  font-size: 140%;
-  margin: 5px 0 5px 0;
+  min-height: 120px;
 }
 .mode_demo .World-status .status-description div {
   margin: 5px;
 }
 .mode_demo .World-status .buttonblock {
-  margin: 5px;
+  margin: 10px;
 }
 .mode_demo .World-status .instructions {
   border-top: 1px solid gray;
+  font-size: 80%;
   margin: 5px auto 0 auto;
-  padding-top: 5px;
+  padding-top: 10px;
   width: 512px;
+}
+.mode_demo .ui.message p {
+  font-size: 90%;
+}
+.mode_demo .simulation-result {
+  margin: 5px auto 0 auto;
 }
 
 .dataset_info {
