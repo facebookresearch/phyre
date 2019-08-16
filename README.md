@@ -1,5 +1,5 @@
 
-<p align="center"><img width="70%" src="imgs/phyre_logo.jpg" /></p>
+<p align="center"><img width="70%" src="https://raw.githubusercontent.com/facebookresearch/phyre/master/imgs/phyre_logo.jpg" /></p>
 
 [![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/facebookresearch/phyre/blob/master/LICENSE)
 [![CircleCI](https://circleci.com/gh/facebookresearch/phyre.svg?style=svg)](https://circleci.com/gh/facebookresearch/phyre)
@@ -14,30 +14,29 @@ such that when the physical simulation is run the goal is satisfied. An agent
 playing this game must solve previously unseen puzzles in as few attempts as
 possible.
 
-![phyre](imgs/phyre_tasks.gif)
+![phyre](https://raw.githubusercontent.com/facebookresearch/phyre/master/imgs/phyre_tasks.gif)
 
-You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/) and jump straight into [jupyter notebook](examples/01_phyre_intro.ipynb).
+You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/) and jump straight into [jupyter notebook](https://github.com/facebookresearch/phyre/blob/master/examples/01_phyre_intro.ipynb).
 
 
 # Getting started
 
 ## Installation
-The recommended way to install the PHYRE is by using a [Conda](https://docs.conda.io/en/latest/) package manager.
+The simplest way to install PHYRE is via pip. As PHYRE requires Python version 3.6, we recommend installing PHYRE inside a virtual environment, e.g. using [Conda](https://docs.conda.io/en/latest/).
+
+ We provide PHYRE as a pip package for both Linux and Mac OS.
 
 ```(bash)
-git clone https://github.com/facebookresearch/phyre.git
-cd phyre
-conda env create -f env.yml
-source activate phyre
-pip install -e src/python
+conda create -n phyre python=3.6 & conda activate phyre
+pip install phyre
 ```
 
  To check that the installation was successful, run `python -m phyre.server` and open http://localhost:30303. That should start a local demo server.
 
- Alternatively, we provide a [Dockerfile](Dockerfile) that builds the package in a controlled environment.
+For instructions on building PHYRE from source and installing in a Docker container, see [INSTALLATION](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md).
 
 ## Notebooks
-We provide jupyter notebooks that show [how to use PHYRE API](examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](examples/02_memoized_agent.ipynb) to train agents faster.
+We provide jupyter notebooks that show [how to use PHYRE API](https://github.com/facebookresearch/phyre/blob/master/examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](https://github.com/facebookresearch/phyre/blob/master/examples/02_memoized_agent.ipynb) to train agents faster.
 In order to run the notebooks, you may need to install additional python dependencies with `pip install -r requirements.examples.txt`.
 
 ## Training an agent
@@ -60,7 +59,7 @@ python agents/train.py \
 File `run_experiment.py` contains groups of experiments, e.g, sweeping over number of update for DQN-O or training agents on all seeds and eval setups. And `train_all_baseline.sh` starts experiments to train all baseline algorithms in the paper.
 
 # License
-PHYRE is released under the Apache license. See [LICENSE](LICENSE) for additional details.
+PHYRE is released under the Apache license. See [LICENSE](https://github.com/facebookresearch/phyre/blob/master/LICENSE) for additional details.
 
 
 # Citation
