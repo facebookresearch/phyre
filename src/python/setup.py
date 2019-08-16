@@ -36,8 +36,12 @@ class build_ext(setuptools.command.build_ext.build_ext):
 setuptools.setup(name='phyre',
       version='0.0.1',
       author='Facebook AI Research',
+      license='Apache Software License',
+      url='https://phyre.ai',
+      description='Benchmark for physical reasoning',
       package_data={
           'phyre': [
+              os.path.join('interface', '*.py'),
               os.path.join('interface', '*', '*.py'),
               os.path.join('simulator_bindings*.so'),
               os.path.join('data', '*'),
@@ -45,6 +49,7 @@ setuptools.setup(name='phyre',
               os.path.join('data', '*', '*', '*'),
               os.path.join('viz_static_file', '*'),
               os.path.join('viz_static_file', '*', '*'),
+              os.path.join('viz_static_file', '*', '*', '*'),
           ]
       },
       packages=['phyre', 'phyre.creator', 'phyre.viz_server'],
@@ -52,4 +57,8 @@ setuptools.setup(name='phyre',
           'nose', 'numpy', 'tornado', 'thrift', 'imageio', 'scipy',
           'joblib'
       ],
-      cmdclass={'build_ext': build_ext})
+      cmdclass={'build_ext': build_ext},
+      classifiers=[
+        'Programming Language :: Python :: 3.6',
+        'License :: OSI Approved :: Apache Software License',
+      ])
