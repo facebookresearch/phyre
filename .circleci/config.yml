@@ -1,7 +1,6 @@
 version: 2
 jobs:
   build:
-    resource_class: large
     docker:
       - image: continuumio/miniconda3:4.6.14
     steps:
@@ -34,7 +33,6 @@ jobs:
            . ~/.bashrc
            conda activate phyre
            pip install -e src/python
-
       # Save node package cache.
       - save_cache:
           key: v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}
@@ -46,3 +44,205 @@ jobs:
            . ~/.bashrc
            conda activate phyre
            make test
+
+  build-linux-wheel:
+    docker:
+      - image: ubuntu:bionic-20190612
+    steps:
+      - checkout
+
+      # Install conda.
+      - run:
+         command: |
+          apt-get update
+          apt-get install build-essential wget git --yes
+          wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.7.10-Linux-x86_64.sh
+          mkdir ~/.conda
+          bash Miniconda3-4.7.10-Linux-x86_64.sh -b -p /opt/conda
+          rm Miniconda3-4.7.10-Linux-x86_64.sh
+          ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh
+          echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
+          echo "conda activate base" >> ~/.bashrc
+          find /opt/conda/ -follow -type f -name '*.a' -delete
+          find /opt/conda/ -follow -type f -name '*.js.map' -delete
+          /opt/conda/bin/conda clean -afy
+          . /opt/conda/etc/profile.d/conda.sh
+          conda info --envs
+      - restore_cache:
+          keys:
+            - v1-conda-{{ checksum "env.yml" }}-linux-build
+
+      # Create conda env with all deps.
+      - run:
+         command: |
+           . /opt/conda/etc/profile.d/conda.sh
+           if [[ ! -d "/opt/conda/envs/phyre/" ]]; then
+            conda env create -f env.yml
+           fi
+      - save_cache:
+          key: v1-conda-{{ checksum "env.yml" }}-linux-build
+          paths: /opt/conda/envs/phyre/
+
+      # Restore node cache.
+      - restore_cache:
+          keys:
+            - v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-linux-build
+
+      # Install phyre.
+      - run:
+         command: |
+           . /opt/conda/etc/profile.d/conda.sh
+           conda init bash
+           . ~/.bashrc
+           conda activate phyre
+           pip install -e src/python
+
+      # Save node package cache.
+      - save_cache:
+          key: v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-linux-build
+          paths: src/viz/node_modules/
+
+      # Run tests.
+      - run:
+         command: |
+           . /opt/conda/etc/profile.d/conda.sh
+           . ~/.bashrc
+           conda activate phyre
+           make test
+
+      # Build wheel
+      - run:
+         command: |
+           . /opt/conda/etc/profile.d/conda.sh
+           . ~/.bashrc
+           conda activate phyre
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name linux_x86_64 && popd
+
+      # Test wheel in empty conda env
+      - run:
+         command: |
+           . /opt/conda/etc/profile.d/conda.sh
+           . ~/.bashrc
+           mkdir install
+           cp src/python/dist/phyre-0.0.1-cp36-none-linux_x86_64.whl install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+           cp -r src/python/phyre/tests/ wheel-test/
+           rm -r src/
+           conda remove -n test --all
+           conda create -n test python=3.6
+           conda activate test
+           pip install install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+           nosetests wheel-test/
+
+      # Store wheel to upload to PyPi
+      - store_artifacts:
+          path: install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+
+  build-osx-wheel:
+    macos:
+      xcode: "10.0.0"
+    steps:
+      - checkout
+      # Install conda.
+      - run:
+         command: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          brew install wget
+          brew install md5sha1sum
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
+          bash ~/miniconda.sh -b -p $HOME/miniconda
+          export PATH="$HOME/miniconda/bin:$PATH"
+      - restore_cache:
+          keys:
+            - v1-conda-{{ checksum "env.yml" }}-osx-build
+
+      # Create conda env with all deps.
+      - run:
+         command: |
+           export PATH="$HOME/miniconda/bin:$PATH"
+           source $HOME/miniconda/bin/activate
+           if [[ ! -d "/opt/conda/envs/phyre/" ]]; then
+            conda env create -f env.yml
+           fi
+      - save_cache:
+          key: v1-conda-{{ checksum "env.yml" }}-osx-build
+          paths: /opt/conda/envs/phyre/
+
+      # Restore node cache.
+      - restore_cache:
+          keys:
+            - v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-osx-build
+
+      # Install phyre.
+      - run:
+         command: |
+           export PATH="$HOME/miniconda/bin:$PATH"
+           source $HOME/miniconda/bin/activate
+           conda init bash
+           conda activate phyre
+           pip install -e src/python
+
+      # Save node package cache.
+      - save_cache:
+          key: v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-osx-build
+          paths: src/viz/node_modules/
+
+      # Run tests.
+      - run:
+         command: |
+           export PATH="$HOME/miniconda/bin:$PATH"
+           source $HOME/miniconda/bin/activate
+           conda activate phyre
+           make test
+
+      # Make wheel
+      - run:
+         command: |
+           export PATH="$HOME/miniconda/bin:$PATH"
+           source $HOME/miniconda/bin/activate
+           conda activate phyre
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal && popd
+
+      # Test wheel in new empty conda env
+      - run:
+         command: |
+           export PATH="$HOME/miniconda/bin:$PATH"
+           source $HOME/miniconda/bin/activate
+           mkdir install
+           cp src/python/dist/phyre-0.0.1-cp36-none-macosx_10_0_universal.whl install/phyre-0.0.1-cp36-none-macosx_10_0_universal.whl
+           cp -r src/python/phyre/tests/ wheel-test/
+           rm -r src/
+           conda remove -n test --all
+           conda create -n test python=3.6
+           conda activate test
+           pip install install/phyre-0.0.1-cp36-none-macosx_10_0_universal.whl
+           nosetests wheel-test/
+
+      # Store wheel to upload to PyPi
+      - store_artifacts:
+          path: install/phyre-0.0.1-cp36-none-macosx_10_0_universal.whl
+
+workflows:
+  version: 2
+  build-phyre:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^build-wheel.*/
+      #Build the wheels if commit tag starts with build-wheel
+      - build-linux-wheel:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^build-wheel.*/
+            branches:
+              ignore: /.*/
+      - build-osx-wheel:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^build-wheel.*/
+            branches:
+              ignore: /.*/
