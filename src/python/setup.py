@@ -61,4 +61,6 @@ setuptools.setup(name='phyre',
       classifiers=[
         'Programming Language :: Python :: 3.6',
         'License :: OSI Approved :: Apache Software License',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
       ])
