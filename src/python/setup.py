@@ -15,7 +15,6 @@
 
 
 import os
-import pathlib
 import sys
 import subprocess
 
@@ -39,7 +38,7 @@ class build_ext(setuptools.command.build_ext.build_ext):
 
 
 setuptools.setup(name='phyre',
-      version='0.0.3',
+      version='0.0.1',
       author='Facebook AI Research',
       license='Apache Software License',
       url='https://phyre.ai',

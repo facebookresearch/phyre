@@ -27,7 +27,7 @@ The simplest way to install PHYRE is via pip. As PHYRE requires Python version 3
  We provide PHYRE as a pip package for both Linux and Mac OS.
 
 ```(bash)
-conda create -n phyre python=3.6 & conda activate phyre
+conda create -n phyre python=3.6 && conda activate phyre
 pip install phyre
 ```
 
