@@ -116,7 +116,7 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name manylinux1_x86_64 && popd
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name manylinux1_x86_64
 
       # Test wheel in empty conda env
       - run:
@@ -200,7 +200,7 @@ jobs:
            export PATH="$HOME/miniconda/bin:$PATH"
            source $HOME/miniconda/bin/activate
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal && popd
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal
 
       # Test wheel in new empty conda env
       - run:
