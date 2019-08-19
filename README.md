@@ -1,7 +1,7 @@
 
-<p align="center"><img width="70%" src="https://raw.githubusercontent.com/facebookresearch/phyre/master/imgs/phyre_logo.jpg" /></p>
+<p align="center"><img width="70%" src="imgs/phyre_logo.jpg" /></p>
 
-[![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/facebookresearch/phyre/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](LICENSE)
 [![CircleCI](https://circleci.com/gh/facebookresearch/phyre.svg?style=svg)](https://circleci.com/gh/facebookresearch/phyre)
 
 **PHYRE** is a benchmark for physical reasoning.
@@ -14,9 +14,9 @@ such that when the physical simulation is run the goal is satisfied. An agent
 playing this game must solve previously unseen puzzles in as few attempts as
 possible.
 
-![phyre](https://raw.githubusercontent.com/facebookresearch/phyre/master/imgs/phyre_tasks.gif)
+![phyre](imgs/phyre_tasks.gif)
 
-You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/) and jump straight into [jupyter notebook](https://github.com/facebookresearch/phyre/blob/master/examples/01_phyre_intro.ipynb).
+You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/) and jump straight into [jupyter notebook](examples/01_phyre_intro.ipynb).
 
 
 # Getting started
@@ -33,10 +33,10 @@ pip install phyre
 
  To check that the installation was successful, run `python -m phyre.server` and open http://localhost:30303. That should start a local demo server.
 
-For instructions on building PHYRE from source and installing in a Docker container, see [INSTALLATION](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md).
+For instructions on building PHYRE from source and installing in a Docker container, see [INSTALLATION](INSTALLATION.md).
 
 ## Notebooks
-We provide jupyter notebooks that show [how to use PHYRE API](https://github.com/facebookresearch/phyre/blob/master/examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](https://github.com/facebookresearch/phyre/blob/master/examples/02_memoized_agent.ipynb) to train agents faster.
+We provide jupyter notebooks that show [how to use PHYRE API](examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](examples/02_memoized_agent.ipynb) to train agents faster.
 In order to run the notebooks, you may need to install additional python dependencies with `pip install -r requirements.examples.txt`.
 
 ## Training an agent
@@ -59,7 +59,7 @@ python agents/train.py \
 File `run_experiment.py` contains groups of experiments, e.g, sweeping over number of update for DQN-O or training agents on all seeds and eval setups. And `train_all_baseline.sh` starts experiments to train all baseline algorithms in the paper.
 
 # License
-PHYRE is released under the Apache license. See [LICENSE](https://github.com/facebookresearch/phyre/blob/master/LICENSE) for additional details.
+PHYRE is released under the Apache license. See [LICENSE](LICENSE) for additional details.
 
 
 # Citation
