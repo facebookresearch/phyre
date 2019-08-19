@@ -1,7 +1,7 @@
 
 <p align="center"><img width="70%" src="imgs/phyre_logo.jpg" /></p>
 
-[![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/facebookresearch/phyre/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](LICENSE)
 [![CircleCI](https://circleci.com/gh/facebookresearch/phyre.svg?style=svg)](https://circleci.com/gh/facebookresearch/phyre)
 
 **PHYRE** is a benchmark for physical reasoning.
@@ -22,19 +22,18 @@ You can explore the tasks and try to solve them using the [demo](http://player.p
 # Getting started
 
 ## Installation
-The recommended way to install the PHYRE is by using a [Conda](https://docs.conda.io/en/latest/) package manager.
+The simplest way to install PHYRE is via pip. As PHYRE requires Python version 3.6, we recommend installing PHYRE inside a virtual environment, e.g. using [Conda](https://docs.conda.io/en/latest/).
+
+ We provide PHYRE as a pip package for both Linux and Mac OS.
 
 ```(bash)
-git clone https://github.com/facebookresearch/phyre.git
-cd phyre
-conda env create -f env.yml
-source activate phyre
-pip install -e src/python
+conda create -n phyre python=3.6 && conda activate phyre
+pip install phyre
 ```
 
  To check that the installation was successful, run `python -m phyre.server` and open http://localhost:30303. That should start a local demo server.
 
- Alternatively, we provide a [Dockerfile](Dockerfile) that builds the package in a controlled environment.
+For instructions on building PHYRE from source and installing in a Docker container, see [INSTALLATION](INSTALLATION.md).
 
 ## Notebooks
 We provide jupyter notebooks that show [how to use PHYRE API](examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](examples/02_memoized_agent.ipynb) to train agents faster.
@@ -68,9 +67,10 @@ PHYRE is released under the Apache license. See [LICENSE](LICENSE) for additiona
 If you use PHYRE in your experiments, please cite it:
 
 ```bibtex
-@inproceedings{bakhtin2019phyre,
-  title = {PHYRE: A New Benchmark for Physical Reasoning},
-  author = {Anton Bakhtin and Laurens van der Maaten and Justin Johnson and Laura Gustafson and Ross Girshick},
-  year = {2019},
+@article{bakhtin2019phyre,
+    title={PHYRE: A New Benchmark for Physical Reasoning},
+    author={Anton Bakhtin and Laurens van der Maaten and Justin Johnson and Laura Gustafson and Ross Girshick},
+    year={2019},
+    journal={arXiv:1908.05656}
 }
 ```

@@ -116,7 +116,7 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name linux_x86_64 && popd
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name manylinux1_x86_64
 
       # Test wheel in empty conda env
       - run:
@@ -124,18 +124,18 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            mkdir install
-           cp src/python/dist/phyre-0.0.1-cp36-none-linux_x86_64.whl install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+           cp src/python/dist/phyre-0.0.1-cp36-none-manylinux1_x86_64.whl install/phyre-0.0.1-cp36-none-manylinux1_x86_64.whl
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -n test python=3.6
            conda activate test
-           pip install install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+           pip install install/phyre-0.0.1-cp36-none-manylinux1_x86_64.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/phyre-0.0.1-cp36-none-linux_x86_64.whl
+          path: install/phyre-0.0.1-cp36-none-manylinux1_x86_64.whl
 
   build-osx-wheel:
     macos:
@@ -200,7 +200,7 @@ jobs:
            export PATH="$HOME/miniconda/bin:$PATH"
            source $HOME/miniconda/bin/activate
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal && popd
+           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal
 
       # Test wheel in new empty conda env
       - run:

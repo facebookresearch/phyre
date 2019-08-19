@@ -15,6 +15,7 @@
 
 
 import os
+import re
 import sys
 import subprocess
 
@@ -22,7 +23,20 @@ import setuptools
 import setuptools.command.build_ext
 
 BUILD_COMMANDS = [['make', 'react_deps'], ['make', 'develop']]
+README_PATH = os.path.join(os.path.dirname(__file__), '../../README.md')
 
+with open(README_PATH) as f:
+    readme = f.read()
+    readme = re.sub(
+        r'\(([^\s()]*?)(LICENSE|.md|.ipynb)',
+        r'(https://github.com/facebookresearch/phyre/blob/master/\1\2',
+        readme,
+    )
+    readme = re.sub(
+        r'(\(|=")([^\s()]*?)(.gif|.jpg)',
+        r'\1https://raw.githubusercontent.com/facebookresearch/phyre/master/\2\3',
+        readme,
+    )
 
 class build_ext(setuptools.command.build_ext.build_ext):
 
@@ -38,7 +52,9 @@ setuptools.setup(name='phyre',
       author='Facebook AI Research',
       license='Apache Software License',
       url='https://phyre.ai',
-      description='Benchmark for physical reasoning',
+      description='Benchmark for PHYsical REasoning',
+      long_description=readme,
+      long_description_content_type='text/markdown',
       package_data={
           'phyre': [
               os.path.join('interface', '*.py'),
