@@ -67,9 +67,10 @@ PHYRE is released under the Apache license. See [LICENSE](LICENSE) for additiona
 If you use PHYRE in your experiments, please cite it:
 
 ```bibtex
-@inproceedings{bakhtin2019phyre,
-  title = {PHYRE: A New Benchmark for Physical Reasoning},
-  author = {Anton Bakhtin and Laurens van der Maaten and Justin Johnson and Laura Gustafson and Ross Girshick},
-  year = {2019},
+@article{bakhtin2019phyre,
+    title={PHYRE: A New Benchmark for Physical Reasoning},
+    author={Anton Bakhtin and Laurens van der Maaten and Justin Johnson and Laura Gustafson and Ross Girshick},
+    year={2019},
+    journal={arXiv:1908.05656}
 }
 ```
