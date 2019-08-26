@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""A library to use precomputed simulation results for a fixed set of actions.
 
+"""
 from typing import FrozenSet, Optional, Sequence, Union
 import logging
 import os
@@ -101,6 +103,27 @@ class SimulationCache():
     def get_sample(self,
                   task_ids: Optional[Sequence[str]] = None,
                   num_actions: Optional[int] = None):
+        """Samples cache for a set of actions on series of tasks.
+
+        Args:
+            task_ids: List of tasks ids to sample form cache. Default None
+                corresponds to all tasks in cache.
+            num_actions: Number of actions to sample per task. Default None
+                corresponds to all actions in cache.
+
+        Returns:
+            Dictionary ::
+
+            {
+                'task_ids': array of task ids,
+                'actions': array of size (num_actions, action space),
+                'simulation_statuses': array of size (task_ids, num_actions) of
+                    simulation results from cache
+            }
+
+        Raises:
+            ValueError: num_actions is greater than number of actions in cache.
+        """
         if task_ids is None:
             task_ids = self.task_ids
         if num_actions is None:

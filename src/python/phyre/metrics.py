@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Set of tools to facilate training and evalation in different split setups.
+"""Tools to get train/test splits and compute evaluation metrics.
 
 """
 from typing import (Any, Callable, Dict, List, Sequence, Tuple, Union)
@@ -32,11 +32,17 @@ MAIN_EVAL_SETUPS: Sequence[str] = (
     'two_balls_cross_template',
     'two_balls_within_template',
 )
+"""List of valid evaluation setups for phyre.
+"""
+
 EVAL_SETUP_BUILDERS: Dict[str, Callable] = {}
 
 MAX_TEST_ATTEMPTS: int = 100
+"""Maximum number of attempts agents are allowed to make per specific task.
+"""
+
 TRAIN_SHARE = 0.8  # Size of the train split.
-AUCESS_METRIC = 'independent_solved_by_aucs'
+AUCCESS_METRIC = 'independent_solved_by_aucs'
 
 SimulationStatusLike = Union[int, str, phyre.action_simulator.SimulationStatus]
 SimulationLog = Sequence[Tuple[str, SimulationStatusLike]]
@@ -69,8 +75,11 @@ def get_fold(eval_setup: str, seed: int
         seed: The random seed to create the fold.
 
     Returns:
-        A tuple (train_ids, dev_ids, test_ids) that contains task ids to use
-            for each split.
+        Tuple (train_ids, dev_ids, test_ids)
+            Contains task ids to use for each split.
+
+    Raises:
+        ValueError: Eval_setup is not valid evaluation setup.
     """
     try:
         builder = EVAL_SETUP_BUILDERS[eval_setup]
@@ -377,6 +386,7 @@ def compute_metrics_normalized(simulation_log: SimulationLog,
 
 
 class Evaluator():
+    """Class for storing simulation results and calculating metrics."""
 
     def __init__(self, task_ids: Tuple[str]):
         self._task_ids = task_ids
@@ -385,7 +395,21 @@ class Evaluator():
 
     def maybe_log_attempt(self, task_index: int,
                           status: SimulationStatusLike) -> bool:
-        """Logs status of attempt on task iff status is for a valid action"""
+        """Logs status of attempt on task iff status is for a valid action.
+
+        Args:
+            task_index: index into task_ids of task.
+            status: simulation status of attempt on task.
+
+        Returns:
+            True if attempt was logged (valid action, less than
+                MAX_TEST_ATTEMPTS made on task), else False.
+
+
+        Raises:
+            AssertionError: More than MAX_TEST_ATTEMPTS attempts were made on
+                the task.
+        """
         status = _normalize_sumulation_status(status)
         if status.is_invalid():
             return False
@@ -400,18 +424,47 @@ class Evaluator():
         return True
 
     def compute_all_metrics(self) -> Metrics:
+        """Computes metrics based on recorded log of simulation results.
+
+        Returns:
+            Dictionary mapping metric name to computed value.
+        """
         return compute_metrics_normalized(self._log, len(self._task_ids))
 
+    # Deprecated spelling.
     def get_aucess(self, attempts: int = MAX_TEST_ATTEMPTS) -> float:
+        return self.get_auccess(attempts)
+
+    def get_auccess(self, attempts: int = MAX_TEST_ATTEMPTS) -> float:
+        """Calculated AUCCESS metric.
+
+        Starting in v0.0.1.1 renamed from get_aucess to get_auccess.
+
+        Args:
+            attempts: Number of attempts to use for calulation of auccess,
+                default MAX_TEST_ATTEMPTS.
+
+        Returns:
+            Result of AUCCESS calculation.
+        """
         metrics = self.compute_all_metrics()
-        return metrics[AUCESS_METRIC][attempts]
+        return metrics[AUCCESS_METRIC][attempts]
 
     def get_attempts_for_task(self, task_index):
+        """
+        Args:
+            task_index: index into task_ids of task.
+
+        Returns:
+            Number recorded attempts on task_index.
+        """
         return self.attempts_per_task_index[task_index]
 
     @property
     def task_ids(self) -> Tuple[str, ...]:
+        """Returns ordered list of tasks ids."""
         return self._task_ids
 
     def __len__(self) -> int:
+        """Returns number of recorded attempts."""
         return len(self._log)

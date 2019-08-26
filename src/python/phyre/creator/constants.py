@@ -18,7 +18,11 @@ import phyre.interface.shared.ttypes as shared_if
 import phyre.interface.shared.constants as shared_constants
 
 SCENE_WIDTH: int = 256
+"""Width of scene during simulation in pixels.
+"""
 SCENE_HEIGHT: int = 256
+"""Height of scene during simulation in pixels.
+"""
 
 
 def color_to_name(color_id):
@@ -80,3 +84,5 @@ class SolutionTier(enum.IntEnum):
 
 
 NUM_COLORS: int = len(ROLE_TO_COLOR_ID)
+"""Number of different colors used for objects in phyre simulations.
+"""
