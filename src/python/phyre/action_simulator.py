@@ -111,24 +111,37 @@ class ActionSimulator():
 
         Args:
             max_actions: int, maximum number of discrete actions.
-            seed: int, radnom seed to generate the subspace.
+            seed: int, random seed to generate the subspace.
 
         Returns:
-            discrete_actions: tuple of actions if length max_actions.
+            discrete_actions: tuple of actions of length max_actions.
         """
         rng = np.random.RandomState(seed=seed)
         return [self.sample(rng=rng) for _ in range(max_actions)]
 
     @property
     def initial_scenes(self) -> np.ndarray:
+        """Represents intial scene for each task before agent input.
+
+        uint8 array with shape (task, height, width).
+        """
         return self._initial_scenes
 
     @property
     def goals(self) -> Optional[np.ndarray]:
+        """Represents goals for each task.
+
+        uint8 array with shape (task, 3). Each goal is encoded with
+        three numbers: (obj_type1, obj_type2, rel). All three are less than
+        MAX_GOAL. To be more precise, obj_types are less than MAX_OBJECT_TYPE
+        and rel is less than MAX_RELATION.
+        """
         return self._goals
 
     @property
     def task_ids(self) -> Tuple[str, ...]:
+        """Tuple of task ids in simulator.
+        """
         return self._task_ids
 
     def _get_user_input(self, action):
@@ -190,12 +203,10 @@ class ActionSimulator():
                 stable is set.
 
         Returns:
-
-            If need_images is True, returns a pair (status, images).
-                If status is INVALID_INPUT or need_images is False is None.
-                Otherwise images is an array contains intermediate observations.
-
-            if need_images is False, returns (status, None).
+             * If need_images is True, returns a pair (status, images).
+                * If status is INVALID_INPUT images is None.
+                * Otherwise images is an array contains intermediate observations.
+             * If need_images is False: returns (status, None).
         """
         user_input, is_valid = self._get_user_input(action)
         if not is_valid:
