@@ -229,6 +229,8 @@ workflows:
           filters:
             tags:
               only: /^build-wheel.*/
+            branches:
+              ignore: /^gh-pages/
       #Build the wheels if commit tag starts with build-wheel
       - build-linux-wheel:
           requires:
