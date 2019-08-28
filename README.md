@@ -36,8 +36,7 @@ pip install phyre
 For instructions on building PHYRE from source and installing in a Docker container, see [INSTALLATION](INSTALLATION.md).
 
 ## Notebooks
-We provide jupyter notebooks that show [how to use PHYRE API](examples/01_phyre_intro.ipynb) to run simulations and evaluate a random agent and [how to use simulation cache](examples/02_memoized_agent.ipynb) to train agents faster.
-In order to run the notebooks, you may need to install additional python dependencies with `pip install -r requirements.examples.txt`.
+We provide jupyter notebooks that show [how to use PHYRE API](examples/01_phyre_intro.ipynb) ([open in Colab](https://colab.research.google.com/github/facebookresearch/phyre/blob/master/examples/01_phyre_intro.ipynb)) to run simulations and evaluate a random agent and [how to use simulation cache](examples/02_memoized_agent.ipynb) ([open in Colab](https://colab.research.google.com/github/facebookresearch/phyre/blob/master/examples/02_memoized_agent.ipynb)) to train agents faster.
 
 ## Training an agent
 We provide a set of baseline agents that are described in the paper.
