@@ -1,0 +1,12 @@
+
+Observations
+=================================
+
+.. automodule:: phyre.vis
+
+.. automodule:: phyre.creator.constants
+    :members:  NUM_COLORS, SCENE_HEIGHT, SCENE_WIDTH
+
+.. automodule:: phyre
+    :members: observations_to_float_rgb, observations_to_uint8_rgb
+    :noindex:

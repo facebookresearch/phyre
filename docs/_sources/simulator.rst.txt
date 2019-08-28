@@ -1,0 +1,8 @@
+
+Simulator
+=================================
+
+.. automodule:: phyre.action_simulator
+
+.. automodule:: phyre
+    :members: ACTION_TIERS, initialize_simulator, ActionSimulator, SimulationStatus

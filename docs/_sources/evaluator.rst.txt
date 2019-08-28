@@ -1,0 +1,11 @@
+
+Evaluation
+=================================
+
+
+.. automodule:: phyre.metrics
+    :members: MAIN_EVAL_SETUPS, MAX_TEST_ATTEMPTS
+
+.. automodule:: phyre
+    :members: get_fold, list_eval_setups, eval_setup_to_action_tier, Evaluator
+    :noindex:

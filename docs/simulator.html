@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Simulator &mdash; phyre  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Evaluation" href="evaluator.html" />
+    <link rel="prev" title="PHYRE Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> phyre
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluator.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Simulation Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observations.html">Observations</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">phyre</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Simulator</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/simulator.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-phyre.action_simulator">
+<span id="simulator"></span><h1>Simulator<a class="headerlink" href="#module-phyre.action_simulator" title="Permalink to this headline">¶</a></h1>
+<p>Action simulator combines simulator interface with action mappers.</p>
+<p>Simulator takes a list of tasks at initialization, builds agent-readable
+representation for them, and provides interface to run simulation in a
+specified action tier.</p>
+<span class="target" id="module-phyre"></span><dl class="data">
+<dt id="phyre.ACTION_TIERS">
+<code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">ACTION_TIERS</code><em class="property"> = ('ball', 'two_balls')</em><a class="headerlink" href="#phyre.ACTION_TIERS" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of action tiers in phyre.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phyre.initialize_simulator">
+<code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">initialize_simulator</code><span class="sig-paren">(</span><em class="sig-param">task_ids: Sequence[str], action_tier: str</em><span class="sig-paren">)</span> &#x2192; phyre.action_simulator.ActionSimulator<a class="headerlink" href="#phyre.initialize_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize ActionSimulator for given tasks and tier.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="phyre.ActionSimulator">
+<em class="property">class </em><code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">ActionSimulator</code><span class="sig-paren">(</span><em class="sig-param">tasks: Union[Sequence[phyre.interface.task.ttypes.Task], Mapping[str, phyre.interface.task.ttypes.Task]], action_mapper, no_goals: bool = True</em><span class="sig-paren">)</span><a class="headerlink" href="#phyre.ActionSimulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface to query the simulator with actions within the tier.</p>
+<dl class="method">
+<dt id="phyre.ActionSimulator.action_space_dim">
+<em class="property">property </em><code class="sig-name descname">action_space_dim</code><a class="headerlink" href="#phyre.ActionSimulator.action_space_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dimension of the actions space.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.build_discrete_action_space">
+<code class="sig-name descname">build_discrete_action_space</code><span class="sig-paren">(</span><em class="sig-param">max_actions</em>, <em class="sig-param">seed=1</em><span class="sig-paren">)</span> &#x2192; Sequence[Union[Sequence[float], numpy.ndarray]]<a class="headerlink" href="#phyre.ActionSimulator.build_discrete_action_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a mapping from the given number of action to the action space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_actions</strong> – int, maximum number of discrete actions.</p></li>
+<li><p><strong>seed</strong> – int, random seed to generate the subspace.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of actions of length max_actions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>discrete_actions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.goals">
+<em class="property">property </em><code class="sig-name descname">goals</code><a class="headerlink" href="#phyre.ActionSimulator.goals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents goals for each task.</p>
+<p>uint8 array with shape (task, 3). Each goal is encoded with
+three numbers: (obj_type1, obj_type2, rel). All three are less than
+MAX_GOAL. To be more precise, obj_types are less than MAX_OBJECT_TYPE
+and rel is less than MAX_RELATION.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.initial_scenes">
+<em class="property">property </em><code class="sig-name descname">initial_scenes</code><a class="headerlink" href="#phyre.ActionSimulator.initial_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents intial scene for each task before agent input.</p>
+<p>uint8 array with shape (task, height, width).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">valid_only=True</em>, <em class="sig-param">rng=None</em><span class="sig-paren">)</span> &#x2192; Union[Sequence[float], numpy.ndarray]<a class="headerlink" href="#phyre.ActionSimulator.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a random (valid) action from the action space.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.simulate_single">
+<code class="sig-name descname">simulate_single</code><span class="sig-paren">(</span><em class="sig-param">task_index</em>, <em class="sig-param">action</em>, <em class="sig-param">need_images=True</em>, <em class="sig-param">stride=60</em>, <em class="sig-param">stable=False</em><span class="sig-paren">)</span> &#x2192; Tuple[phyre.action_simulator.SimulationStatus, Optional[numpy.ndarray]]<a class="headerlink" href="#phyre.ActionSimulator.simulate_single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs simluation for the action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_index</strong> – index of the task.</p></li>
+<li><p><strong>action</strong> – numpy array with the action.</p></li>
+<li><p><strong>need_images</strong> – whether simulation images are needed.</p></li>
+<li><p><strong>stride</strong> – int, defines the striding for the simulation images
+array. Higher striding will result in less images and less
+compute. Note, that this parameter doesn’t affect simulation
+FPS. Ignored if need_images is False.</p></li>
+<li><p><strong>stable</strong> – if True, will simulate a few actions in the neigborhood
+of the actions and return STABLY_SOLVED status iff all
+neigbour actions are either SOLVED or INVALID. Otherwise
+UNSTABLY_SOLVED is returned. SOLVED is never returned if
+stable is set.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt>If need_images is True, returns a pair (status, images).</dt><dd><ul>
+<li><p>If status is INVALID_INPUT images is None.</p></li>
+<li><p>Otherwise images is an array contains intermediate observations.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>If need_images is False: returns (status, None).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.ActionSimulator.task_ids">
+<em class="property">property </em><code class="sig-name descname">task_ids</code><a class="headerlink" href="#phyre.ActionSimulator.task_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tuple of task ids in simulator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phyre.SimulationStatus">
+<em class="property">class </em><code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">SimulationStatus</code><a class="headerlink" href="#phyre.SimulationStatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Status that ActionSimulator returns given a task and an action.</p>
+<dl class="method">
+<dt id="phyre.SimulationStatus.is_invalid">
+<code class="sig-name descname">is_invalid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#phyre.SimulationStatus.is_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether the action is invalid for the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.SimulationStatus.is_not_solved">
+<code class="sig-name descname">is_not_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#phyre.SimulationStatus.is_not_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the action is valid, but doesn’t solve the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.SimulationStatus.is_solved">
+<code class="sig-name descname">is_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#phyre.SimulationStatus.is_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the action solved the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.SimulationStatus.is_stably_solved">
+<code class="sig-name descname">is_stably_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#phyre.SimulationStatus.is_stably_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the action is stable solution for the task.</p>
+<p>This only applies if the simulation was called with <cite>stable</cite> flag.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="evaluator.html" class="btn btn-neutral float-right" title="Evaluation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="PHYRE Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Facebook AI Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
