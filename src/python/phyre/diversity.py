@@ -32,17 +32,18 @@ NUM_ACTIONS = 1000000
 def compute_cache_power_of_solutions(template, template_tasks, tier):
     base_dir = phyre.simulation_cache.get_partial_cache_folder(NUM_ACTIONS)
     assert base_dir.exists(), (f'Partial simulation cache folder {base_dir} '
-        'does not exist')
+                               'does not exist')
     cached_task_actions = {}
     for task in template_tasks:
         fname = f'{base_dir}/{tier}/{template}/{task}.gz'
         assert os.path.exists(fname), (f'Partial simulation cache file {fname} '
-            'does not exist')
+                                       'does not exist')
         actions = joblib.load(fname)
-        cached_task_actions[task] = actions 
+        cached_task_actions[task] = actions
     action_task = np.stack(list(cached_task_actions.values()), axis=1)
     num_solved = (action_task > 0).sum(axis=1)
     return sorted(num_solved.tolist(), reverse=True)
+
 
 def compute_power_of_solutions(template_eval, template_tasks, tier):
     """Compute power for each solution in eval stats.
@@ -50,8 +51,7 @@ def compute_power_of_solutions(template_eval, template_tasks, tier):
     Solution power is how many tasks an action solves.
     """
     template_tasks = set(template_tasks)
-    actions_on_tasks = template_eval['solution_power'][tier][
-        'actions_on_tasks']
+    actions_on_tasks = template_eval['solution_power'][tier]['actions_on_tasks']
     task_ids = template_eval['solution_power'][tier]['task_ids']
     indicies = np.array(
         [i for i in range(len(task_ids)) if task_ids[i] in template_tasks])
@@ -67,12 +67,11 @@ def print_stats(template_tier_pairs, all_task_ids, use_partial_cache):
           ' template')
     print()
     percent_thresholds = ['%d%%' % int(i * 100) for i in THRESHOLDS]
-    print(
-        'tpl',
-        '%10s' % 'tier',
-        '%10s' % 'solutions',
-        *percent_thresholds,
-        sep='\t')
+    print('tpl',
+          '%10s' % 'tier',
+          '%10s' % 'solutions',
+          *percent_thresholds,
+          sep='\t')
 
     executor = concurrent.futures.ProcessPoolExecutor()
     all_solution_powers = []
@@ -83,7 +82,7 @@ def print_stats(template_tier_pairs, all_task_ids, use_partial_cache):
         ]
         if use_partial_cache:
             future = executor.submit(compute_cache_power_of_solutions,
-                                    template_id, template_tasks, tier)
+                                     template_id, template_tasks, tier)
         else:
             eval_stats = all_eval_stats[template_id]
             future = executor.submit(compute_power_of_solutions, eval_stats,
@@ -97,12 +96,11 @@ def print_stats(template_tier_pairs, all_task_ids, use_partial_cache):
             num_solved.append(
                 sum(1 for i in solution_powers
                     if i >= threshold * len(template_tasks)))
-        print(
-            template_id,
-            '%10s' % tier,
-            '%10s' % len(solution_powers),
-            *num_solved,
-            sep='\t')
+        print(template_id,
+              '%10s' % tier,
+              '%10s' % len(solution_powers),
+              *num_solved,
+              sep='\t')
 
 
 def main(template_id, tier, use_partial_cache):
@@ -126,8 +124,9 @@ def main(template_id, tier, use_partial_cache):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--template-id', required=True, help='Single template-id or "all".')
+    parser.add_argument('--template-id',
+                        required=True,
+                        help='Single template-id or "all".')
     parser.add_argument(
         '--tier',
         choices=GOOD_TIERS,

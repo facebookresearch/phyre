@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import re
 import sys
@@ -38,6 +37,7 @@ with open(README_PATH) as f:
         readme,
     )
 
+
 class build_ext(setuptools.command.build_ext.build_ext):
 
     def run(self):
@@ -48,35 +48,33 @@ class build_ext(setuptools.command.build_ext.build_ext):
 
 
 setuptools.setup(name='phyre',
-      version='0.0.1.1',
-      author='Facebook AI Research',
-      license='Apache Software License',
-      url='https://phyre.ai',
-      description='Benchmark for PHYsical REasoning',
-      long_description=readme,
-      long_description_content_type='text/markdown',
-      package_data={
-          'phyre': [
-              os.path.join('interface', '*.py'),
-              os.path.join('interface', '*', '*.py'),
-              os.path.join('simulator_bindings*.so'),
-              os.path.join('data', '*'),
-              os.path.join('data', '*', '*'),
-              os.path.join('data', '*', '*', '*'),
-              os.path.join('viz_static_file', '*'),
-              os.path.join('viz_static_file', '*', '*'),
-              os.path.join('viz_static_file', '*', '*', '*'),
-          ]
-      },
-      packages=['phyre', 'phyre.creator', 'phyre.viz_server'],
-      install_requires=[
-          'nose', 'numpy', 'tornado', 'thrift', 'imageio', 'scipy',
-          'joblib'
-      ],
-      cmdclass={'build_ext': build_ext},
-      classifiers=[
-        'Programming Language :: Python :: 3.6',
-        'License :: OSI Approved :: Apache Software License',
-        'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-      ])
+                 version='0.0.1.1',
+                 author='Facebook AI Research',
+                 license='Apache Software License',
+                 url='https://phyre.ai',
+                 description='Benchmark for PHYsical REasoning',
+                 long_description=readme,
+                 long_description_content_type='text/markdown',
+                 package_data={
+                     'phyre': [
+                         os.path.join('interface', '*.py'),
+                         os.path.join('interface', '*', '*.py'),
+                         os.path.join('simulator_bindings*.so'),
+                         os.path.join('data', '*'),
+                         os.path.join('data', '*', '*'),
+                         os.path.join('data', '*', '*', '*'),
+                         os.path.join('viz_static_file', '*'),
+                         os.path.join('viz_static_file', '*', '*'),
+                         os.path.join('viz_static_file', '*', '*', '*'),
+                     ]
+                 },
+                 packages=['phyre', 'phyre.creator', 'phyre.viz_server'],
+                 install_requires=[
+                     'nose', 'numpy', 'tornado', 'thrift', 'imageio', 'scipy',
+                     'joblib'
+                 ],
+                 cmdclass={'build_ext': build_ext},
+                 classifiers=[
+                     'Programming Language :: Python :: 3.6',
+                     'License :: OSI Approved :: Apache Software License',
+                 ])

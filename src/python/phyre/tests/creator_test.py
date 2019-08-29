@@ -40,8 +40,8 @@ class TaskCreatorTestCase(unittest.TestCase):
                     # Create task with single object.
                     scale = max(0.02, random.random())
                     C = phyre.creator.creator.TaskCreator()
-                    C.add(
-                        '%s %s %s' % (dynamic, color, object_type), scale=scale)
+                    C.add('%s %s %s' % (dynamic, color, object_type),
+                          scale=scale)
                     self.assertEqual(len(C.body_list), 5)  # Four walls.
                     body = C.body_list[-1]
                     self.assertEqual(body.dynamic, dynamic == 'dynamic')

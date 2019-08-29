@@ -130,8 +130,8 @@ class ServiceHandler():
                          len(needs_update), needs_update)
             # Reseting eval cache to maybe invalidate some eval stats.
             self._eval_stats = None
-            data = loader.load_tasks_from_folder(
-                template_id_list=needs_update, eval_stats=self.eval_stats)
+            data = loader.load_tasks_from_folder(template_id_list=needs_update,
+                                                 eval_stats=self.eval_stats)
             logging.info('Got %d task instances', len(data))
             bad_keys = [
                 k for k in self._task_cache if k.split(':')[0] in needs_update
@@ -266,8 +266,8 @@ class ServiceHandler():
             [rel_id] = task.relationships
             rel = task_if.SpatialRelationship._VALUES_TO_NAMES[rel_id]
             thumbs.append(
-                task_if.Thumb(
-                    img=get_task_as_base64_image(task, resize=100), extra=rel))
+                task_if.Thumb(img=get_task_as_base64_image(task, resize=100),
+                              extra=rel))
         return thumbs
 
     def _simulate_task_meta(self, task, user_input, dilate=True):
@@ -283,8 +283,8 @@ class ServiceHandler():
         print('Converted %d points, %d polygons, %d balls into %d bodies'
               ' with %d shapes' %
               (len(user_input.flattened_point_list or []) / 2,
-               len(user_input.polygons or []), len(user_input.balls or []),
-               len(task.scene.user_input_bodies),
+               len(user_input.polygons or []), len(
+                   user_input.balls or []), len(task.scene.user_input_bodies),
                sum(len(b.shapes) for b in task.scene.user_input_bodies)))
         simulation = simulator.simulate_task(task, stride=3)
         if self._config['mode'] == DEV_MODE:
@@ -294,13 +294,14 @@ class ServiceHandler():
             ]
         else:
             rendered = []
-        return task_if.TaskSimulationWithMeta(
-            simulation=simulation, rendered_imgs=rendered)
+        return task_if.TaskSimulationWithMeta(simulation=simulation,
+                                              rendered_imgs=rendered)
 
     @_time_me
     def simulate_task_by_id(self, task_id, user_input, dilate):
-        return self._simulate_task_meta(
-            copy.copy(self.task_cache[task_id]), user_input, dilate=dilate)
+        return self._simulate_task_meta(copy.copy(self.task_cache[task_id]),
+                                        user_input,
+                                        dilate=dilate)
 
     def simulate_task_with_last_input(self, task):
         assert self._config['mode'] != DEMO_MODE
@@ -337,8 +338,9 @@ class ServiceHandler():
     def render(self, scene):
         assert self._config['mode'] != DEMO_MODE
         pixels = simulator.scene_to_raster(scene).flatten().tolist()
-        return scene_if.Image(
-            width=scene.width, height=scene.height, values=pixels)
+        return scene_if.Image(width=scene.width,
+                              height=scene.height,
+                              values=pixels)
 
 
 def eval_stats_has_task(template_stats, task_id):

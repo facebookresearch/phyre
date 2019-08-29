@@ -43,8 +43,8 @@ def get_default_100k_cache(tier: str) -> 'SimulationCache':
     url = (f'https://dl.fbaipublicfiles.com/phyre/simulation_cache/v0'
            f'/{DEFAULT_NUM_ACTIONS}/{tier}/{CACHE_FILE_NAME}')
 
-    cache_dir = (
-        phyre.simulation_cache.get_cache_folder(DEFAULT_NUM_ACTIONS) / tier)
+    cache_dir = (phyre.simulation_cache.get_cache_folder(DEFAULT_NUM_ACTIONS) /
+                 tier)
     cache_path = cache_dir / CACHE_FILE_NAME
     if not cache_path.exists():
         logging.info('Downloading cache from %s', url)
@@ -101,8 +101,8 @@ class SimulationCache():
         return frozenset(self._statuses_per_task)
 
     def get_sample(self,
-                  task_ids: Optional[Sequence[str]] = None,
-                  num_actions: Optional[int] = None):
+                   task_ids: Optional[Sequence[str]] = None,
+                   num_actions: Optional[int] = None):
         """Samples cache for a set of actions on series of tasks.
 
         Args:
@@ -139,7 +139,6 @@ class SimulationCache():
         assert actions.shape[0] == simulations_states.shape[1], (
             actions.shape, simulations_states.shape)
         assert actions.shape[0] == num_actions, (actions.shape, num_actions)
-        return dict(
-            task_ids=task_ids,
-            actions=actions,
-            simulation_statuses=simulations_states)
+        return dict(task_ids=task_ids,
+                    actions=actions,
+                    simulation_statuses=simulations_states)

@@ -38,8 +38,8 @@ def compute_creator_hash():
 
 
 def get_solution_path(task_id, solution_id=0):
-    return str(
-        settings.SOLUTION_DIR / f'task{task_id}.solution{solution_id:02d}')
+    return str(settings.SOLUTION_DIR /
+               f'task{task_id}.solution{solution_id:02d}')
 
 
 def stable_shuffle(strings, salt=''):
@@ -81,8 +81,9 @@ def _maybe_read_text_solution(fpath):
 def load_user_input(fpath):
     # Try to read in text format first.
     points = _maybe_read_text_solution(fpath)
-    user_input = scene_if.UserInput(
-        flattened_point_list=[], polygons=[], balls=[])
+    user_input = scene_if.UserInput(flattened_point_list=[],
+                                    polygons=[],
+                                    balls=[])
     if points is not None:
         user_input.flattened_point_list = np.array(points).flatten().tolist()
     else:

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Functions to build thrift shape objects.
 
 Each shape is defined by a subclass of ShapeBuilder. To build a shape call
@@ -32,6 +31,7 @@ SCENE_WIDTH = constants.SCENE_WIDTH
 
 
 def get_builders():
+
     def yield_subclasses(cls):
         for subcls in cls.__subclasses__():
             yield subcls
@@ -45,8 +45,8 @@ class ShapeBuilder(object):
     @classmethod
     def default_sizes(cls, scale):
         """Convert single scale parameter to a dict of arguments for build."""
-        raise RuntimeError(
-            'Using "scale" is not supported for %s' % cls.__name__)
+        raise RuntimeError('Using "scale" is not supported for %s' %
+                           cls.__name__)
 
     @classmethod
     @abc.abstractmethod
@@ -191,13 +191,13 @@ class StandingSticks(ShapeBuilder):
             shapes.append(rotated_bar)
 
         # construct phantom vertices:
-        phantom_vertices = (shapes[1][1], shapes[1][2],
-                            shapes[0][3], shapes[0][0],
-                            shapes[1][3], shapes[1][0],
+        phantom_vertices = (shapes[1][1], shapes[1][2], shapes[0][3],
+                            shapes[0][0], shapes[1][3], shapes[1][0],
                             shapes[0][1], shapes[0][2])
 
         # return shapes:
-        return [vertices_to_polygon(shape) for shape in shapes], phantom_vertices
+        return [vertices_to_polygon(shape) for shape in shapes
+               ], phantom_vertices
 
 
 class Jar(ShapeBuilder):
@@ -209,8 +209,8 @@ class Jar(ShapeBuilder):
         width = height / 1.2
         # Thickness is logarithmical and thickness at scale 0.3 is
         # SCENE_WIDTH / 50.
-        thickness = (
-            math.log(height) / math.log(0.3 * SCENE_WIDTH) * SCENE_WIDTH / 50)
+        thickness = (math.log(height) / math.log(0.3 * SCENE_WIDTH) *
+                     SCENE_WIDTH / 50)
         return dict(
             height=height,
             width=width,
