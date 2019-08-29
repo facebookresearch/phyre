@@ -1,0 +1,3 @@
+src/python/phyre/interface/*
+src/python/build/*
+src/viz/mpde_modules/*

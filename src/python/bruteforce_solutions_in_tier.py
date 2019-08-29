@@ -57,10 +57,9 @@ def main(action_tier_name, task_prefix, max_attempts, num_workers,
          save_as_canonical_solution):
     task_dict = get_task_dict(task_prefix)
     logging.info('Found %d tasks matching %s', len(task_dict), task_prefix)
-    _worker = functools.partial(
-        _eval_single_task,
-        action_tier_name=action_tier_name,
-        attempts=max_attempts)
+    _worker = functools.partial(_eval_single_task,
+                                action_tier_name=action_tier_name,
+                                attempts=max_attempts)
     pool = multiprocessing.Pool(num_workers if num_workers > 0 else None)
     total_solved = 0
     action_log = []
@@ -92,15 +91,15 @@ def main(action_tier_name, task_prefix, max_attempts, num_workers,
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        format=('%(asctime)s %(levelname)-8s'
-                ' {%(module)s:%(lineno)d} %(message)s'),
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(format=('%(asctime)s %(levelname)-8s'
+                                ' {%(module)s:%(lineno)d} %(message)s'),
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--action-tier-name', required=True, choices=tuple(phyre.ACTION_TIERS))
+    parser.add_argument('--action-tier-name',
+                        required=True,
+                        choices=tuple(phyre.ACTION_TIERS))
     parser.add_argument('--task-prefix', required=True)
     parser.add_argument('--max-attempts', type=int, default=4000)
     parser.add_argument('--save-as-canonical-solution', action='store_true')

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """A thin wrapper around c++ simulator bindings to handle Thrift objects."""
 import copy
 import numpy as np
@@ -59,8 +58,9 @@ def build_user_input(points=None, rectangulars=None, balls=None):
     for start in range(0, len(balls), 3):
         ball = balls[start:start + 3]
         user_input.balls.append(
-            scene_if.CircleWithPosition(
-                position=scene_if.Vector(ball[0], ball[1]), radius=ball[2]))
+            scene_if.CircleWithPosition(position=scene_if.Vector(
+                ball[0], ball[1]),
+                                        radius=ball[2]))
     return user_input
 
 
@@ -106,8 +106,9 @@ def add_user_input_to_scene(scene, user_input, keep_space_around_bodies=True):
 
     return deserialize(
         scene_if.Scene(),
-        simulator_bindings.add_user_input_to_scene(
-            serialize(scene), serialize(user_input), keep_space_around_bodies))
+        simulator_bindings.add_user_input_to_scene(serialize(scene),
+                                                   serialize(user_input),
+                                                   keep_space_around_bodies))
 
 
 def simulate_task_with_input(task,
@@ -220,9 +221,10 @@ def magic_ponies(task,
     else:
         points, rectangulars, balls = _prepare_user_input(*user_input)
         is_solved, had_occlusions, packed_images, sim_time, pack_time = (
-            simulator_bindings.magic_ponies(
-                serialized_task, points, rectangulars, balls,
-                keep_space_around_bodies, steps, stride))
+            simulator_bindings.magic_ponies(serialized_task, points,
+                                            rectangulars, balls,
+                                            keep_space_around_bodies, steps,
+                                            stride))
 
     packed_images = np.array(packed_images, dtype=np.uint8)
 
@@ -243,11 +245,11 @@ def batched_magic_ponies(tasks,
     del num_workers  # Not used.
     return tuple(
         zip(*[
-            magic_ponies(
-                t,
-                ui,
-                steps=steps,
-                stride=stride,
-                keep_space_around_bodies=keep_space_around_bodies,
-                with_times=with_times) for t, ui in zip(tasks, user_inputs)
+            magic_ponies(t,
+                         ui,
+                         steps=steps,
+                         stride=stride,
+                         keep_space_around_bodies=keep_space_around_bodies,
+                         with_times=with_times)
+            for t, ui in zip(tasks, user_inputs)
         ]))

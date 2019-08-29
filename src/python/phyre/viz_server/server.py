@@ -120,10 +120,11 @@ def main_with_args(port, mode):
         'prot_factory': pfactory
     }), (PHYRE_CONFIG_PATH, ConfigHandler, {
         'config': config
-    }), (r'/(.*)', StaticFileHandler, {
-        'path': HTML_PATH,
-        'default_filename': 'index.html',
-    })]
+    }),
+                (r'/(.*)', StaticFileHandler, {
+                    'path': HTML_PATH,
+                    'default_filename': 'index.html',
+                })]
     application = tornado.web.Application(handlers)
 
     print(f'I\'m {__file__}')
@@ -136,22 +137,20 @@ def main_with_args(port, mode):
 
 
 def main():
-    logging.basicConfig(
-        format=('%(asctime)s %(levelname)-8s'
-                ' {%(module)s:%(lineno)d} %(message)s'),
-        level=logging.INFO,
-        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(format=('%(asctime)s %(levelname)-8s'
+                                ' {%(module)s:%(lineno)d} %(message)s'),
+                        level=logging.INFO,
+                        datefmt='%Y-%m-%d %H:%M:%S')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=30303)
-    parser.add_argument(
-        '--mode',
-        choices=(
-            phyre.viz_server.handler.PROD_MODE,
-            phyre.viz_server.handler.DEV_MODE,
-            phyre.viz_server.handler.DEMO_MODE,
-        ),
-        default=phyre.viz_server.handler.DEMO_MODE)
+    parser.add_argument('--mode',
+                        choices=(
+                            phyre.viz_server.handler.PROD_MODE,
+                            phyre.viz_server.handler.DEV_MODE,
+                            phyre.viz_server.handler.DEMO_MODE,
+                        ),
+                        default=phyre.viz_server.handler.DEMO_MODE)
     main_with_args(**vars(parser.parse_args()))
 
 

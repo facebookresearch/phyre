@@ -32,12 +32,11 @@ class TaskCreator(object):
         self.scene = scene_if.Scene(bodies=[])
         self.scene.width = constants.SCENE_WIDTH
         self.scene.height = constants.SCENE_HEIGHT
-        self.task = task_if.Task(
-            scene=self.scene,
-            bodyId1=-1,
-            bodyId2=-1,
-            relationships=[self.SpatialRelationship.NONE],
-            phantomShape=None)
+        self.task = task_if.Task(scene=self.scene,
+                                 bodyId1=-1,
+                                 bodyId2=-1,
+                                 relationships=[self.SpatialRelationship.NONE],
+                                 phantomShape=None)
         self.set_meta(self.SolutionTier.GENERAL)
         self.body_list = []
 
@@ -93,11 +92,11 @@ class TaskCreator(object):
 
         # Create and register body.
         if shape == 'bar':
-            assert 0 <= scale, (
-                'Bar scale should be non-negattive. Got %s' % scale)
+            assert 0 <= scale, ('Bar scale should be non-negattive. Got %s' %
+                                scale)
         else:
-            assert 0 <= scale <= 1, (
-                'Scale should be between 0 and 1. Got %s' % scale)
+            assert 0 <= scale <= 1, ('Scale should be between 0 and 1. Got %s' %
+                                     scale)
         body = self._add_body_from_builder(
             builders[shape],
             shape,
@@ -109,28 +108,41 @@ class TaskCreator(object):
         return body
 
     def add_default_box(self, scale, dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Box, 'box', dynamic, scale=scale)
+        return self._add_body_from_builder(shapes_lib.Box,
+                                           'box',
+                                           dynamic,
+                                           scale=scale)
 
     def add_default_ball(self, scale, dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Ball, 'ball', dynamic, scale=scale)
+        return self._add_body_from_builder(shapes_lib.Ball,
+                                           'ball',
+                                           dynamic,
+                                           scale=scale)
 
     def add_default_jar(self, scale, dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Jar, 'jar', dynamic, scale=scale)
+        return self._add_body_from_builder(shapes_lib.Jar,
+                                           'jar',
+                                           dynamic,
+                                           scale=scale)
 
     def add_default_bar(self, scale, dynamic=False):
-        return self._add_body_from_builder(
-            shapes_lib.Bar, 'bar', dynamic, scale=scale)
+        return self._add_body_from_builder(shapes_lib.Bar,
+                                           'bar',
+                                           dynamic,
+                                           scale=scale)
 
     def add_box(self, width, height, dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Box, 'box', dynamic, width=width, height=height)
+        return self._add_body_from_builder(shapes_lib.Box,
+                                           'box',
+                                           dynamic,
+                                           width=width,
+                                           height=height)
 
     def add_ball(self, radius, dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Ball, 'ball', dynamic, radius=radius)
+        return self._add_body_from_builder(shapes_lib.Ball,
+                                           'ball',
+                                           dynamic,
+                                           radius=radius)
 
     def add_jar(self,
                 base_width=50,
@@ -138,14 +150,13 @@ class TaskCreator(object):
                 height=100,
                 thickness=10,
                 dynamic=True):
-        return self._add_body_from_builder(
-            shapes_lib.Jar,
-            'jar',
-            dynamic,
-            base_width=base_width,
-            width=width,
-            height=height,
-            thickness=thickness)
+        return self._add_body_from_builder(shapes_lib.Jar,
+                                           'jar',
+                                           dynamic,
+                                           base_width=base_width,
+                                           width=width,
+                                           height=height,
+                                           thickness=thickness)
 
     def _add_body_from_builder(self, builder, body_type, dynamic,
                                **builder_kwargs):
@@ -198,8 +209,8 @@ class TaskCreator(object):
             poly_vertices = []
             for v in phantom_vertices:
                 poly_vertices.append(scene_if.Vector(v[0], v[1]))
-            shape = scene_if.Shape(
-                polygon=scene_if.Polygon(vertices=poly_vertices))
+            shape = scene_if.Shape(polygon=scene_if.Polygon(
+                vertices=poly_vertices))
             self.task.phantomShape = shape
 
         if description is None:
@@ -322,8 +333,9 @@ class Body(object):
             else:
                 assert shape.polygon
                 for v in shape.polygon.vertices:
-                    yield _to_absolute(
-                        v.x, v.y, radians=self._thrift_body.angle)
+                    yield _to_absolute(v.x,
+                                       v.y,
+                                       radians=self._thrift_body.angle)
 
     def push(self, x, y):
         """Apply the shift vector in the system of the body's coordinates."""

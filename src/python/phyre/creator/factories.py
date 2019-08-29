@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Decorators to convert a function with a task definition to Task objects."""
 import collections
 import itertools
@@ -98,12 +97,11 @@ def select_max_diverse_subset(tasks, eval_stats, max_tasks, tier):
 def define_task(f):
     """Use @creator.define_task to decorate a task definition."""
 
-    return TempateTaskScript(
-        f,
-        dict_of_template_values={},
-        version='1',
-        max_tasks=1,
-        search_params=SearchParams())
+    return TempateTaskScript(f,
+                             dict_of_template_values={},
+                             version='1',
+                             max_tasks=1,
+                             search_params=SearchParams())
 
 
 class SkipTemplateParams(Exception):
@@ -154,12 +152,11 @@ def define_task_template(max_tasks=None,
     assert isinstance(version, str), version
 
     def decorator(f):
-        return TempateTaskScript(
-            f,
-            dict_of_template_values,
-            version=version,
-            max_tasks=max_tasks,
-            search_params=search_params)
+        return TempateTaskScript(f,
+                                 dict_of_template_values,
+                                 version=version,
+                                 max_tasks=max_tasks,
+                                 search_params=search_params)
 
     return decorator
 

@@ -60,7 +60,7 @@ def get_solution_power(tier, template_id, eval_data):
     # Run simulation all solution/task pairs and record.
     task_solutions = np.zeros((len(all_sols), len(task_ids)))
     for (sol_i, task_i) in itertools.product(range(len(all_sols)),
-        range(len(task_ids))):
+                                             range(len(task_ids))):
         status, _ = simulator.simulate_single(task_i, all_sols[sol_i])
         task_solutions[sol_i][task_i] = 1 if status.is_solved() else 0
     return task_solutions, task_ids, tier
@@ -99,7 +99,11 @@ def does_solution_power_need_update(task_path):
         return True
 
 
-def save_solution_power(template_id, eval_meta, eval_data, task_path, num_workers=-1):
+def save_solution_power(template_id,
+                        eval_meta,
+                        eval_data,
+                        task_path,
+                        num_workers=-1):
     solution_powers = {}
     solution_powers['evaluator_version'] = eval_meta.get(
         'evaluator_version', '1')
@@ -111,13 +115,10 @@ def save_solution_power(template_id, eval_meta, eval_data, task_path, num_worker
         template_id=template_id,
         eval_data=eval_data['eval_stats'],
     )
-    num_workers = min(
-        num_workers,
-        len(phyre.action_mappers.ACTION_MAPPERS)) if num_workers > 0 else None
+    num_workers = min(num_workers, len(
+        phyre.action_mappers.ACTION_MAPPERS)) if num_workers > 0 else None
     pool = multiprocessing.Pool(num_workers)
-    results = pool.map(
-        partial_worker,
-        phyre.action_mappers.ACTION_MAPPERS)
+    results = pool.map(partial_worker, phyre.action_mappers.ACTION_MAPPERS)
     pool.close()
     for tier_solution_power, task_ids, tier in results:
         solution_powers[f'{tier}_actions_on_tasks'] = tier_solution_power

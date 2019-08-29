@@ -56,8 +56,8 @@ class ClevrEnvTest(unittest.TestCase):
         self.assertEqual(evaluator.get_attempts_for_task(0), 100)
         self.assertEqual(evaluator.get_attempts_for_task(1), 100)
         self.assertEqual(
-            evaluator._log, 
-            [('task0', phyre.SimulationStatus.SOLVED) for i in range(100)] + 
+            evaluator._log,
+            [('task0', phyre.SimulationStatus.SOLVED) for i in range(100)] +
             [('task1', phyre.SimulationStatus.SOLVED) for i in range(100)])
         self.assertRaises(Exception, lambda: evaluator.log_attempt(1, 1))
 
@@ -99,21 +99,24 @@ class ClevrEnvTest(unittest.TestCase):
         num = (math.log(13) - math.log(1)) + (math.log(13) - math.log(12))
         denom = math.log(13)
         print(metrics['independent_solved_by_aucs'][:20])
-        self.assertEqual(metrics['independent_solved_by_aucs'][12], num / denom / 2.)
+        self.assertEqual(metrics['independent_solved_by_aucs'][12],
+                         num / denom / 2.)
 
     def testDevSet(self):
         train_task_ids = [f'task{i}' for i in range(10)]
         base_eval_setup = [(train_task_ids, [])]
         _assert_valid_eval_setup(base_eval_setup)
-        dev_eval_setup = phyre.metrics.create_dev_set(
-            base_eval_setup, train_share=0.8, seed=0)
+        dev_eval_setup = phyre.metrics.create_dev_set(base_eval_setup,
+                                                      train_share=0.8,
+                                                      seed=0)
         _assert_valid_eval_setup(dev_eval_setup)
         self.assertEqual(len(dev_eval_setup), 1)
         self.assertEqual(len(dev_eval_setup[0][0]), 8)  # Eight train tasks.
         self.assertEqual(len(dev_eval_setup[0][1]), 1)  # Single eval group.
         self.assertEqual(len(dev_eval_setup[0][1][0]), 2)  # Two eval tasks.
-        dev_eval_setup2 = phyre.metrics.create_dev_set(
-            base_eval_setup, train_share=0.8, seed=2)
+        dev_eval_setup2 = phyre.metrics.create_dev_set(base_eval_setup,
+                                                       train_share=0.8,
+                                                       seed=2)
         self.assertNotEqual(dev_eval_setup, dev_eval_setup2)
 
 

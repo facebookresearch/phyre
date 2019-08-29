@@ -279,7 +279,7 @@ def _get_observations(tasks: Sequence[task_if.Task]
 
 
 def initialize_simulator(task_ids: Sequence[str],
-                        action_tier: str) -> ActionSimulator:
+                         action_tier: str) -> ActionSimulator:
     """Initialize ActionSimulator for given tasks and tier."""
     tasks = phyre.loader.load_compiled_task_list(task_ids)
     return ActionSimulator(tasks, action_tier)

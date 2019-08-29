@@ -11,7 +11,7 @@ We actively welcome your pull requests.
 1. Fork the repo and create your branch from `master`.
 2. If you've added code that should be tested, add tests.
 3. Ensure the test suite passes.
-4. Make sure your code lints. Use `clang` and `yapf` to automatically format your code.
+4. Make sure your code lints. Use `clang` and `yapf (version 0.28.0)` to automatically format your code.
 5. If you haven't already, complete the Contributor License Agreement ("CLA").
 
 

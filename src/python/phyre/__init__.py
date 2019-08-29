@@ -21,6 +21,6 @@ from phyre.action_simulator import initialize_simulator, ActionSimulator, Simula
 from phyre.simulation_cache import SimulationCache, get_default_100k_cache
 from phyre.vis import observations_to_float_rgb, observations_to_uint8_rgb
 
-ACTION_TIERS:Tuple[str] = tuple(sorted(_action_mappers.MAIN_ACITON_MAPPERS))
+ACTION_TIERS: Tuple[str] = tuple(sorted(_action_mappers.MAIN_ACITON_MAPPERS))
 """List of action tiers in phyre.
 """

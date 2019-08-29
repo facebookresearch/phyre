@@ -28,8 +28,9 @@ def build_task(C):
     right = C.add('dynamic bar', scale=0.3).set_bottom(0).set_left(left.right)
 
     # Always valid.
-    C.update_task(
-        body1=left, body2=right, relationships=[C.SpatialRelationship.LEFT_OF])
+    C.update_task(body1=left,
+                  body2=right,
+                  relationships=[C.SpatialRelationship.LEFT_OF])
 
 
 class SimulatorTest(unittest.TestCase):
@@ -120,8 +121,9 @@ class SimulatorTest(unittest.TestCase):
         assert steps >= simulator.STEPS_FOR_SOLUTION
         # Empty solution should be valid.
         self.assertTrue(
-            simulator.magic_ponies(
-                self._task, self._box_compressed_user_input, steps=steps)[0])
+            simulator.magic_ponies(self._task,
+                                   self._box_compressed_user_input,
+                                   steps=steps)[0])
 
     def test_render(self):
         array = simulator.scene_to_raster(self._task.scene)
@@ -130,8 +132,9 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(array.shape[1], self._task.scene.width)
 
     def test_render_with_input(self):
-        scene = simulator.simulate_task_with_input(
-            self._task, self._box_user_input, steps=1).sceneList[0]
+        scene = simulator.simulate_task_with_input(self._task,
+                                                   self._box_user_input,
+                                                   steps=1).sceneList[0]
         array = simulator.scene_to_raster(scene)
         self.assertEqual(len(array.shape), 2)
         self.assertEqual(array.shape[0], self._task.scene.height)
@@ -139,15 +142,17 @@ class SimulatorTest(unittest.TestCase):
 
     def test_add_input_and_simulate_strided(self):
         steps = 10
-        full_results = simulator.simulate_task_with_input(
-            self._task, self._box_user_input, stride=1, steps=steps)
+        full_results = simulator.simulate_task_with_input(self._task,
+                                                          self._box_user_input,
+                                                          stride=1,
+                                                          steps=steps)
         strided_results = simulator.simulate_task_with_input(
             self._task, self._box_user_input, stride=3, steps=steps)
         self.assertEqual(len(full_results.sceneList), steps)
         self.assertEqual(len(strided_results.sceneList), math.ceil(steps / 3))
         self.assertEqual(len(full_results.solvedStateList), steps)
-        self.assertEqual(
-            len(strided_results.solvedStateList), math.ceil(steps / 3))
+        self.assertEqual(len(strided_results.solvedStateList),
+                         math.ceil(steps / 3))
         for i in range(0, steps, 3):
             self.assertEqual(full_results.sceneList[i],
                              strided_results.sceneList[i // 3])

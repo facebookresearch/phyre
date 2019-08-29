@@ -45,6 +45,17 @@ jobs:
            conda activate phyre
            make test
 
+  yapf-formatting:
+    docker:
+      - image: continuumio/miniconda3:4.6.14
+    steps:
+      - checkout
+      # Check yapf formatting
+      - run:
+         command: |
+           pip install yapf==0.28.0
+           yapf -r src/python/ -p --diff
+
   build-linux-wheel:
     docker:
       - image: ubuntu:bionic-20190612
@@ -225,6 +236,10 @@ workflows:
   version: 2
   build-phyre:
     jobs:
+      - yapf-formatting:
+          filters:
+            tags:
+              only: /^build-wheel.*/
       - build:
           filters:
             tags:
