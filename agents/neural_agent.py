@@ -158,7 +158,7 @@ def refine_actions(model, actions, single_observarion, learning_rate,
             optimizer.zero_grad()
             logits = model(None, action_batch, preprocessed=preprocessed)
             if refine_loss == 'ce':
-                loss = model.ce_loss(logits, actions.new_ones(len(actions)))
+                loss = model.ce_loss(logits, actions.new_ones(len(logits)))
             elif refine_loss == 'linear':
                 loss = -logits.sum()
             else:
