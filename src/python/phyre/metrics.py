@@ -19,6 +19,7 @@ import collections
 import functools
 import hashlib
 import itertools
+import logging
 import math
 
 import phyre.action_mappers
@@ -49,6 +50,8 @@ SimulationLog = Sequence[Tuple[str, SimulationStatusLike]]
 EvaluationLog = List[Tuple[str, phyre.action_simulator.SimulationStatus]]
 EvalSetup = Sequence[Tuple[Sequence[str], Sequence[Sequence[str]]]]
 Metrics = Dict[str, Any]
+
+logger = logging.getLogger(__name__)
 
 
 def eval_setup_to_action_tier(eval_setup_name: str) -> str:
@@ -315,8 +318,9 @@ def compute_metrics(raw_simulation_log: SimulationLog) -> Metrics:
     assert isinstance(raw_simulation_log,
                       (tuple, list)), type(raw_simulation_log)
     if not raw_simulation_log:
-        return {}
-    assert len(raw_simulation_log[0]) == 2, raw_simulation_log[0]
+        logger.warning('Computing metrics for empty evaluation log!')
+    else:
+        assert len(raw_simulation_log[0]) == 2, raw_simulation_log[0]
 
     simulation_log = [(task, _normalize_sumulation_status(status))
                       for task, status in raw_simulation_log]
@@ -332,6 +336,12 @@ def compute_metrics(raw_simulation_log: SimulationLog) -> Metrics:
         if task not in solved_at and status.is_solved():
             first_solution_points.append(attempt_index)
             solved_at[task] = attempts[task]
+
+    if solved_at and max(solved_at.values()) > MAX_TEST_ATTEMPTS:
+        logger.warning(
+            'Used more than %d attempts at least of one of the'
+            ' tasks. It most likely means a bug in evaluation loop.',
+            MAX_TEST_ATTEMPTS)
 
     # independent_solved_by[i] := how many task was solved with at most i
     # attempts on the task.
@@ -363,6 +373,7 @@ def compute_metrics(raw_simulation_log: SimulationLog) -> Metrics:
         independent_solved_by=independent_solved_by,
         independent_solved_by_aucs=independent_solved_by_aucs,
         global_solved_by=global_solved_by,
+        total_attempts=sum(attempts.values()),
         total_solved=len(first_solution_points),
     )
 
@@ -382,7 +393,13 @@ def normalize_metrics(metrics: Metrics, num_tasks: int) -> Metrics:
 
 def compute_metrics_normalized(simulation_log: SimulationLog,
                                num_tasks: int) -> Metrics:
-    return normalize_metrics(compute_metrics(simulation_log), num_tasks)
+    metrics = compute_metrics(simulation_log)
+    if metrics['total_attempts'] < MAX_TEST_ATTEMPTS * num_tasks:
+        logger.warning(
+            'Used %f attempts per task instead of maximum allowed'
+            ' %f. That probably indicate a bug in evaluation loop.',
+            metrics['total_attempts'] / num_tasks, MAX_TEST_ATTEMPTS)
+    return normalize_metrics(metrics, num_tasks)
 
 
 class Evaluator():

@@ -87,7 +87,8 @@ class ClevrEnvTest(unittest.TestCase):
             evaluator.maybe_log_attempt(0, 1 if i == 0 else -1)
         for i in range(20):
             evaluator.maybe_log_attempt(1, 1 if i == 11 else -1)
-        metrics = evaluator.compute_all_metrics()
+        with self.assertLogs('phyre.metrics', level='WARNING') as log_results:
+            metrics = evaluator.compute_all_metrics()
         self.assertEqual(metrics['independent_solved_by'][1], 0.5)
         self.assertEqual(metrics['independent_solved_by'][10], 0.5)
         self.assertEqual(metrics['independent_solved_by'][20], 1.0)
@@ -101,6 +102,24 @@ class ClevrEnvTest(unittest.TestCase):
         print(metrics['independent_solved_by_aucs'][:20])
         self.assertEqual(metrics['independent_solved_by_aucs'][12],
                          num / denom / 2.)
+        self.assertSequenceEqual(log_results.output, [
+            'WARNING:phyre.metrics:Used 20.000000 attempts per task instead of'
+            ' maximum allowed 100.000000. That probably indicate a bug'
+            ' in evaluation loop.'
+        ])
+
+    def testComputeMetricsEmpty(self):
+        evaluator = phyre.metrics.Evaluator(TASKS)
+        with self.assertLogs('phyre.metrics', level='WARNING') as log_results:
+            auccesss = evaluator.get_auccess()
+        self.assertEqual(auccesss, 0.0)
+        self.assertSequenceEqual(log_results.output, [
+            'WARNING:phyre.metrics:Computing metrics for empty evaluation'
+            ' log!',
+            'WARNING:phyre.metrics:Used 0.000000 attempts per task instead of'
+            ' maximum allowed 100.000000. That probably indicate a bug'
+            ' in evaluation loop.'
+        ])
 
     def testDevSet(self):
         train_task_ids = [f'task{i}' for i in range(10)]
