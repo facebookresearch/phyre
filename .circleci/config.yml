@@ -45,6 +45,37 @@ jobs:
            conda activate phyre
            make test
 
+      # Download simulation cache.
+      - restore_cache:
+          keys:
+            - v1-sim-cache-{{ checksum "src/python/phyre/simulation_cache.py" }}
+      - run:
+         command: |
+           . ~/.bashrc
+           conda activate phyre
+           python -c "import phyre; phyre.get_default_100k_cache('ball')"
+           python -c "import phyre; phyre.get_default_100k_cache('two_balls')"
+      - save_cache:
+          key: v1-sim-cache-{{ checksum "src/python/phyre/simulation_cache.py" }}
+          paths: ~/.cache
+
+      # Train a simple agent from README.
+      - run:
+         command: |
+           . ~/.bashrc
+           conda activate phyre
+           pip install -r requirements.agents.txt
+           python agents/train.py \
+              --output-dir=/tmp/agent_training \
+              --eval-setup-name=ball_cross_template \
+              --fold-id=0 \
+              --mem-rerank-size 100 \
+              --agent-type=memoize
+           if [ ! -f "/tmp/agent_training/results.json" ]; then
+              echo "No results file found!"
+              exit 1
+           fi
+
   yapf-formatting:
     docker:
       - image: continuumio/miniconda3:4.6.14
@@ -54,7 +85,7 @@ jobs:
       - run:
          command: |
            pip install yapf==0.28.0
-           yapf -r src/python/ -p --diff
+           yapf -r src/python/ agents/ -p --diff
 
   build-linux-wheel:
     docker:

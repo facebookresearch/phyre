@@ -181,16 +181,18 @@ class ActionSimulator():
         return status, images
 
     def simulate_single(self,
-                        task_index,
-                        action,
-                        need_images=True,
-                        stride=phyre.simulator.DEFAULT_STRIDE,
-                        stable=False) -> Tuple[SimulationStatus, MaybeImages]:
+                        task_index: int,
+                        action: ActionLike,
+                        need_images: bool = True,
+                        stride: int = phyre.simulator.DEFAULT_STRIDE,
+                        stable: bool = False
+                       ) -> Tuple[SimulationStatus, MaybeImages]:
         """Runs simluation for the action.
 
         Args:
             task_index: index of the task.
-            action: numpy array with the action.
+            action: numpy array or list of self.action_space_dim floats in
+                [0, 1].
             need_images: whether simulation images are needed.
             stride: int, defines the striding for the simulation images
                 array. Higher striding will result in less images and less

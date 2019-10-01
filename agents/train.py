@@ -11,7 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""General train/eval loop for a single agent on a single train/test split.
 
+The script:
+  * Finds all knows agents - all subclasses for offline_agents.Agent in the
+    included files.
+  * Loads train/dev or train/test task split for the specified seed and tier.
+    By default a dev split is used. Set --use-test-split=1 got get get the
+    final, (train + dev)/test split.
+  * Initializes the agent from the commandline flags.
+  * Trains the agent on the train part.
+  * Evaluates the agents on eval part.
+  * Saves the evalution results to `output_dir`/results.json. The file will
+    contain a dictionary with all evaluation metrics. The most important one,
+    AUCCESS@100 is saved with key "target_metric".
+
+
+See offline_agents for example agents.
+"""
+from typing import Tuple
 import argparse
 import json
 import logging
@@ -23,7 +41,8 @@ import phyre
 import offline_agents
 
 
-def get_train_test(eval_setup_name, fold_id, use_test_split):
+def get_train_test(eval_setup_name: str, fold_id: int, use_test_split: bool
+                  ) -> Tuple[Tuple[str, ...], Tuple[str, ...]]:
     train, dev, test = phyre.get_fold(eval_setup_name, fold_id)
     if use_test_split:
         return train + dev, test

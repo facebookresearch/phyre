@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import collections
+"""This library contains actual implementation of the DQN agent."""
+from typing import Optional, Sequence, Tuple
 import glob
 import logging
 import os
@@ -27,19 +27,38 @@ import phyre
 AUCCESS_EVAL_TASKS = 200
 XE_EVAL_SIZE = 10000
 
+TaskIds = Sequence[str]
+NeuralModel = torch.nn.Module
+TrainData = Tuple[torch.Tensor, torch.Tensor, torch.Tensor, phyre.
+                  ActionSimulator, torch.Tensor]
 
-def create_balanced_eval_set(cache, task_ids, size, tier):
-    """Select a balanced set of max_size triples(task_id, status, action)."""
+
+def create_balanced_eval_set(cache: phyre.SimulationCache, task_ids: TaskIds,
+                             size: int, tier: str) -> TrainData:
+    """Prepares balanced eval set to run through a network.
+
+    Selects (size // 2) positive (task, action) pairs and (size // 2)
+    negative pairs and represents them in a compact formaer
+
+    Returns a tuple
+        (task_indices, is_solved, selected_actions, simulator, observations).
+
+        Tensors task_indices, is_solved, selected_actions, observations, all
+        have lengths size and correspond to some (task, action) pair.
+        For any i the following is true:
+            is_solved[i] is true iff selected_actions[i] solves task
+            task_ids[task_indices[i]].
+    """
     task_ids = tuple(task_ids)
     data = cache.get_sample(task_ids)
     actions = data['actions']
     simulation_statuses = data['simulation_statuses']
 
     flat_statuses = simulation_statuses.reshape(-1)
-    [positive_indices] = (flat_statuses == int(
-        phyre.SimulationStatus.SOLVED)).nonzero()
-    [negative_indices] = (flat_statuses == int(
-        phyre.SimulationStatus.NOT_SOLVED)).nonzero()
+    [positive_indices
+    ] = (flat_statuses == int(phyre.SimulationStatus.SOLVED)).nonzero()
+    [negative_indices
+    ] = (flat_statuses == int(phyre.SimulationStatus.NOT_SOLVED)).nonzero()
 
     half_size = size // 2
     rng = np.random.RandomState(42)
@@ -56,18 +75,23 @@ def create_balanced_eval_set(cache, task_ids, size, tier):
     return task_indices, is_solved, selected_actions, simulator, observations
 
 
-def compact_simulation_data_to_trainset(action_tier_name, actions,
-                                        simulation_statuses, task_ids):
+def compact_simulation_data_to_trainset(action_tier_name: str,
+                                        actions: np.ndarray,
+                                        simulation_statuses: Sequence[int],
+                                        task_ids: TaskIds) -> TrainData:
+    """Converts result of SimulationCache.get_data() to pytorch tensors.
 
+    The format of the output is the same as in create_balanced_eval_set.
+    """
     invalid = int(phyre.SimulationStatus.INVALID_INPUT)
     solved = int(phyre.SimulationStatus.SOLVED)
 
-    task_indices = np.repeat(
-        np.arange(len(task_ids)).reshape((-1, 1)), actions.shape[0],
-        axis=1).reshape(-1)
-    action_indices = np.repeat(
-        np.arange(actions.shape[0]).reshape((1, -1)), len(task_ids),
-        axis=0).reshape(-1)
+    task_indices = np.repeat(np.arange(len(task_ids)).reshape((-1, 1)),
+                             actions.shape[0],
+                             axis=1).reshape(-1)
+    action_indices = np.repeat(np.arange(actions.shape[0]).reshape((1, -1)),
+                               len(task_ids),
+                               axis=0).reshape(-1)
     simulation_statuses = simulation_statuses.reshape(-1)
 
     good_statuses = simulation_statuses != invalid
@@ -82,7 +106,8 @@ def compact_simulation_data_to_trainset(action_tier_name, actions,
     return task_indices, is_solved, actions, simulator, observations
 
 
-def build_model(network_type, **kwargs):
+def build_model(network_type: str, **kwargs) -> NeuralModel:
+    """Builds a DQN network by name."""
     if network_type == 'resnet18':
         model = nets.ResNet18FilmAction(
             kwargs['action_space_dim'],
@@ -96,7 +121,7 @@ def build_model(network_type, **kwargs):
     return model
 
 
-def get_latest_checkpoint(output_dir):
+def get_latest_checkpoint(output_dir: str) -> Optional[str]:
     known_checkpoints = sorted(glob.glob(os.path.join(output_dir, 'ckpt.*')))
     if known_checkpoints:
         return known_checkpoints[-1]
@@ -104,7 +129,7 @@ def get_latest_checkpoint(output_dir):
         return None
 
 
-def load_agent_from_folder(agent_folder):
+def load_agent_from_folder(agent_folder: str) -> NeuralModel:
     last_checkpoint = get_latest_checkpoint(agent_folder)
     assert last_checkpoint is not None, agent_folder
     logging.info('Loading a model from: %s', last_checkpoint)
@@ -115,7 +140,19 @@ def load_agent_from_folder(agent_folder):
     return model
 
 
-def finetune(model, data, simulator, learning_rate, num_updates):
+def finetune(
+        model: NeuralModel,
+        data: Sequence[Tuple[int, phyre.SimulationStatus, Sequence[float]]],
+        simulator: phyre.ActionSimulator, learning_rate: float,
+        num_updates: int) -> None:
+    """Finetunes a model on a small new batch of data.
+
+    Args:
+        model: DQN network, e.g., built with build_model().
+        data: a list of tuples (task_index, status, action).
+        learning_rate: learning rate for Adam.
+        num_updates: number updates to do. All data is used for every update.
+    """
 
     data = [x for x in data if not x[1].is_invalid()]
     if not data:
@@ -141,8 +178,8 @@ def finetune(model, data, simulator, learning_rate, num_updates):
 
 def refine_actions(model, actions, single_observarion, learning_rate,
                    num_updates, batch_size, refine_loss):
-    observations = torch.tensor(
-        single_observarion, device=model.device).unsqueeze(0)
+    observations = torch.tensor(single_observarion,
+                                device=model.device).unsqueeze(0)
     actions = torch.tensor(actions)
 
     refined_actions = []
@@ -215,12 +252,11 @@ def train(output_dir,
         balance_classes, negative_sampling_prob)
 
     device = nets.DEVICE
-    model_kwargs = dict(
-        network_type=network_type,
-        action_space_dim=simulator.action_space_dim,
-        fusion_place=fusion_place,
-        action_hidden_size=action_hidden_size,
-        action_layers=action_layers)
+    model_kwargs = dict(network_type=network_type,
+                        action_space_dim=simulator.action_space_dim,
+                        fusion_place=fusion_place,
+                        action_hidden_size=action_hidden_size,
+                        action_layers=action_layers)
     model = build_model(**model_kwargs)
     model.train()
     model.to(device)
@@ -228,8 +264,8 @@ def train(output_dir,
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     if cosine_scheduler:
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=updates)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                               T_max=updates)
     else:
         scheduler = None
     logging.info('Starting actual training for %d updates', updates)
@@ -245,8 +281,8 @@ def train(output_dir,
             positive_size = train_batch_size // 2
             while True:
                 positives = rng.choice(positive_indices, size=positive_size)
-                negatives = rng.choice(
-                    negative_indices, size=train_batch_size - positive_size)
+                negatives = rng.choice(negative_indices,
+                                       size=train_batch_size - positive_size)
                 positive_size = train_batch_size - positive_size
                 yield np.concatenate((positives, negatives))
         elif negative_sampling_prob < 1:
@@ -303,8 +339,8 @@ def train(output_dir,
     observations = observations.to(device)
     actions = actions.pin_memory()
     is_solved = is_solved.pin_memory()
-    for batch_id, batch_indices in enumerate(
-            train_indices_sampler(), start=batch_start):
+    for batch_id, batch_indices in enumerate(train_indices_sampler(),
+                                             start=batch_start):
         if batch_id >= updates:
             break
         if scheduler is not None:
@@ -316,8 +352,8 @@ def train(output_dir,
         batch_is_solved = is_solved[batch_indices].to(device, non_blocking=True)
 
         optimizer.zero_grad()
-        loss = model.ce_loss(
-            model(batch_observations, batch_actions), batch_is_solved)
+        loss = model.ce_loss(model(batch_observations, batch_actions),
+                             batch_is_solved)
         loss.backward()
         optimizer.step()
         losses.append(loss.mean().item())
@@ -363,8 +399,8 @@ def eval_loss(model, data, batch_size):
             batch_observations = observations[batch_task_indices]
             batch_actions = actions[batch_indices]
             batch_is_solved = is_solved[batch_indices]
-            loss = model.ce_loss(
-                model(batch_observations, batch_actions), batch_is_solved)
+            loss = model.ce_loss(model(batch_observations, batch_actions),
+                                 batch_is_solved)
             losses.append(loss.item() * len(batch_indices))
     return sum(losses) / len(task_indices)
 
@@ -401,7 +437,8 @@ def _eval_and_score_actions(cache, model, simulator, num_actions, batch_size,
             if (evaluator.get_attempts_for_task(task_index) >=
                     phyre.MAX_TEST_ATTEMPTS):
                 break
-            status, _ = simulator.simulate_single(
-                task_index, action, need_images=False)
+            status, _ = simulator.simulate_single(task_index,
+                                                  action,
+                                                  need_images=False)
             evaluator.maybe_log_attempt(task_index, status)
     return evaluator.get_aucess()

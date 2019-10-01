@@ -44,8 +44,9 @@ class FilmActionNetwork(nn.Module):
         self.net = ActionNetwork(action_size, output_size * 2, **kwargs)
 
     def forward(self, actions, image):
-        beta, gamma = torch.chunk(
-            self.net(actions).unsqueeze(-1).unsqueeze(-1), chunks=2, dim=1)
+        beta, gamma = torch.chunk(self.net(actions).unsqueeze(-1).unsqueeze(-1),
+                                  chunks=2,
+                                  dim=1)
         return image * beta + gamma
 
 
@@ -129,24 +130,22 @@ class ResNet18FilmAction(nn.Module):
                  fusion_place='last'):
         super().__init__()
         net = torchvision.models.resnet18(pretrained=False)
-        conv1 = nn.Conv2d(
-            phyre.NUM_COLORS,
-            64,
-            kernel_size=7,
-            stride=2,
-            padding=3,
-            bias=False)
+        conv1 = nn.Conv2d(phyre.NUM_COLORS,
+                          64,
+                          kernel_size=7,
+                          stride=2,
+                          padding=3,
+                          bias=False)
         self.register_buffer('embed_weights', torch.eye(phyre.NUM_COLORS))
         self.stem = nn.Sequential(conv1, net.bn1, net.relu, net.maxpool)
         self.stages = nn.ModuleList(
             [net.layer1, net.layer2, net.layer3, net.layer4])
 
         def build_film(output_size):
-            return FilmActionNetwork(
-                action_size,
-                output_size,
-                hidden_size=action_hidden_size,
-                num_layers=action_layers)
+            return FilmActionNetwork(action_size,
+                                     output_size,
+                                     hidden_size=action_hidden_size,
+                                     num_layers=action_layers)
 
         assert fusion_place in ('first', 'last', 'all', 'none', 'last_single')
 

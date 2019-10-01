@@ -11,6 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Toolst to run sets of experiments for the paper: from ablations to the finals.
+
+E.g., to train all final, i.e., tested on test rather than dev,  run the follwing:
+    python agents/run_experiment.py \
+        --use-test-split 1 --arg-generator finals --num-seeds 10
+
+Note, that this will train everything locally. And each model will be trained
+40 times (4 generalization settings and 10 seeds). To paralellize on the
+cluster one should define a matching Executor and pass it to main() instead
+of the DummyExecutor.
+"""
 
 from typing import Callable, Sequence, Tuple
 import logging
@@ -58,6 +69,10 @@ def _register_arg_generator(func: ArgGenerator) -> ArgGenerator:
 @_register_arg_generator
 def get_base_dqn_args(seed: int, use_test_split: bool,
                       eval_setup: str) -> Sequence[ExperimentInfo]:
+    """Trains a DQN agent.
+
+    The trained model is evaluated with different parameters in other runs.
+    """
     del seed  # Unused.
     del eval_setup  # Unused.
     args = DQN_BASE_ARGS
@@ -69,6 +84,7 @@ def get_base_dqn_args(seed: int, use_test_split: bool,
 @_register_arg_generator
 def get_dqn_ablation_args(seed: int, use_test_split: bool,
                           eval_setup: str) -> Sequence[ExperimentInfo]:
+    """Trains different modifications of DQN architecture."""
     del seed  # Unused.
     del eval_setup  # Unused.
     base_args = DQN_BASE_ARGS + ('--dqn-num-auccess-actions=10000',)
@@ -89,9 +105,10 @@ def get_dqn_ablation_args(seed: int, use_test_split: bool,
 
 
 @_register_arg_generator
-def get_baselines_args_per_rank_size(
-        seed: int, use_test_split: bool,
-        eval_setup: str) -> Sequence[ExperimentInfo]:
+def get_baselines_args_per_rank_size(seed: int, use_test_split: bool,
+                                     eval_setup: str
+                                    ) -> Sequence[ExperimentInfo]:
+    """Trains random and optimal agents for number of actions to "rank"."""
     assert not use_test_split, 'Sweeps should be ran on dev set'
     del seed  # Unused.
     del use_test_split  # Unused.
@@ -99,9 +116,9 @@ def get_baselines_args_per_rank_size(
     args = []
 
     for train_size in 10, 100, 1000, 10000, 100000:
-        args.append((f'optimal_{train_size}',
-                     ('--agent-type=oracle',
-                      f'--oracle-rank-size={train_size}')))
+        args.append(
+            (f'optimal_{train_size}', ('--agent-type=oracle',
+                                       f'--oracle-rank-size={train_size}')))
         args.append((f'random_{train_size}', (
             '--agent-type=random',
             f'--max-test-attempts-per-task={min(100, train_size)}',
@@ -112,6 +129,7 @@ def get_baselines_args_per_rank_size(
 @_register_arg_generator
 def get_finals_args(seed: int, use_test_split: bool,
                     eval_setup: str) -> Sequence[ExperimentInfo]:
+    """Trains final models with the best parameters for each generalization setting."""
     args = []
 
     args.append(('random', ('--agent-type=random',)))
@@ -148,8 +166,8 @@ def get_finals_args(seed: int, use_test_split: bool,
         two_balls_cross_template='--mem-rerank-size=1000',
         two_balls_within_template='--mem-rerank-size=100000',
     )
-    args.append(('mem_rank_optimal', ('--agent-type=memoize',
-                                      mem_ranks[eval_setup])))
+    args.append(
+        ('mem_rank_optimal', ('--agent-type=memoize', mem_ranks[eval_setup])))
 
     mem_onlines = dict(
         ball_cross_template='--mem-test-simulation-weight=10',
@@ -166,6 +184,7 @@ def get_finals_args(seed: int, use_test_split: bool,
 @_register_arg_generator
 def get_rank_and_online_sweep_args(seed: int, use_test_split: bool,
                                    eval_setup: str) -> Sequence[ExperimentInfo]:
+    """Sweeps number of actions to rank and "onlineness" for DQN and MEM."""
     assert not use_test_split, 'Sweeps should be ran on dev set'
     args = []
     for rank in 10, 100, 1000, 10000, 100000:
@@ -193,8 +212,8 @@ def get_rank_and_online_sweep_args(seed: int, use_test_split: bool,
     dqn_base_args = DQN_BASE_ARGS + ('--dqn-load-from', str(dqn_load_from))
 
     for rank in 10, 100, 1000, 10000, 100000:
-        args.append((f'dqn_rank_{rank}',
-                     dqn_base_args + (f'--dqn-rank-size={rank}',)))
+        args.append(
+            (f'dqn_rank_{rank}', dqn_base_args + (f'--dqn-rank-size={rank}',)))
 
     # Optimal rank from the run above.
     dqn_ranks = dict(
@@ -222,9 +241,9 @@ def run(args: Args):
     subprocess.check_call(args)
 
 
-def generate_tasks(
-        num_seeds: int, use_test_split: bool,
-        arg_generator: ArgGenerator) -> Sequence[Tuple[Args, str, pathlib.Path]]:
+def generate_tasks(num_seeds: int, use_test_split: bool,
+                   arg_generator: ArgGenerator
+                  ) -> Sequence[Tuple[Args, str, pathlib.Path]]:
     tasks = []
     split_tag = 'final' if use_test_split else 'dev'
     for eval_setup in phyre.MAIN_EVAL_SETUPS:
@@ -246,7 +265,7 @@ def generate_tasks(
     return tasks
 
 
-class DumyExecutor():
+class DummyExecutor():
     """Exector that runs jobs locally in the main thread."""
 
     def update_parameters(self, *args, **kwargs):
@@ -296,16 +315,16 @@ def main(params, executor):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        format=('%(asctime)s %(levelname)-8s'
-                ' {%(module)s:%(lineno)d} %(message)s'),
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(format=('%(asctime)s %(levelname)-8s'
+                                ' {%(module)s:%(lineno)d} %(message)s'),
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
 
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--num-seeds', type=int)
     parser.add_argument('--use-test-split', type=int, required=True)
-    parser.add_argument(
-        '--arg-generator', required=True, choices=ARG_GENERATORS.keys())
-    main(parser.parse_args(), DumyExecutor())
+    parser.add_argument('--arg-generator',
+                        required=True,
+                        choices=ARG_GENERATORS.keys())
+    main(parser.parse_args(), DummyExecutor())

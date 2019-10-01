@@ -11,7 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Agent interface and example agents.
 
+For train.py to be aware of an agent, it should 1) inherit from Agent class
+and 2) the file with the agent code should be imported in train.py.
+
+The agents in this file do not run simulations during training. Instead they
+use pre-computed simulation results for a fixed 100k sample of actions. In
+that sense, the agents are "offline". See documentation for
+`phyre.simulation_cache` for details.
+
+The library contains a AgentWithSimulationCache wrapper to simplify access to
+the cache.
+"""
+from typing import Any, Tuple
 import abc
 import collections
 import heapq
@@ -23,17 +36,38 @@ import tqdm
 import phyre
 import neural_agent
 
+State = Any
+TaskIds = Tuple[str, ...]
+
 
 class Agent(metaclass=abc.ABCMeta):
+    """Base class for phyre agents.
+
+    The two main methods are train() and eval().
+
+    Train is allowed to do arbitrary number of interactions with the
+    simulator on the set of training tasks. At the end of training it returns
+    a "state" that represents a trained model.
+
+    At the eval state the agent gets the state and a new set of task ids. It
+    can try to solve the tasks in aribtraty order, but can at do at most
+    max_attempts_per_task attempts per task. Invalid action, i.e., ones that
+    results in obects that intersect, are ignored. Each attempts should be
+    logged with phyre.Evaluator. See RandomAgent as an example.
+
+    Both train() and eval() will get all command line flags as keyword
+    arguments. Subclasses can either use kwargs or define the list of needed
+    arguments manually. See OracleRankingAgent for an example.
+    """
 
     @classmethod
-    def add_parser_arguments(cls, parser):
+    def add_parser_arguments(cls, parser: "argparse.ArgumentParser") -> None:
         """Add agent's parameters to the argument parser."""
         del parser  # Not used.
 
     @classmethod
-    def name(cls):
-        """Name of the agent for argparse."""
+    def name(cls) -> str:
+        """Name of the agent for --agent flag."""
         name = cls.__name__
         if name.endswith('Agent'):
             name = name[:-5]
@@ -41,33 +75,36 @@ class Agent(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def train(cls, task_ids, max_attempts_per_task, action_tier_name, **kwargs):
-        """Train an agent and return a state."""
+    def train(cls, task_ids: TaskIds, action_tier_name: str, **kwargs) -> State:
+        """Train an agent and returns a state."""
 
     @classmethod
     @abc.abstractmethod
-    def eval(cls, state, task_ids, max_attempts_per_task, action_tier_name,
-             **kwargs):
-        """Compute simulation log: list of tuples (task_id, status)."""
+    def eval(cls, state: State, task_ids: TaskIds, max_attempts_per_task: int,
+             action_tier_name, **kwargs) -> phyre.Evaluator:
+        """Runs evaluation and logs all attemps with phyre.Evaluator."""
 
 
 class AgentWithSimulationCache(Agent):
 
     @classmethod
-    def train(cls, task_ids, tier, simulation_cache_size=None, **kwargs):
-        assert simulation_cache_size is None, 'Non-default cache size is not supported.'
+    def train(cls, task_ids: TaskIds, tier: str, **kwargs) -> State:
         cache = phyre.get_default_100k_cache(tier)
         return cls._train_with_cache(cache, task_ids, tier=tier, **kwargs)
 
     @classmethod
-    def _train_with_cache(cls, cache, task_ids, tier, **kwargs):
+    def _train_with_cache(cls, cache: phyre.SimulationCache, task_ids: TaskIds,
+                          tier: str, **kwargs) -> State:
+        # In the simplest case the agents uses all cached simulation as its
+        # state to make use if it during evaluation.
         return dict(cache=cache)
 
 
 class RandomAgent(AgentWithSimulationCache):
 
     @classmethod
-    def eval(cls, state, task_ids, max_attempts_per_task, **kwargs):
+    def eval(cls, state: State, task_ids: TaskIds, max_attempts_per_task: int,
+             **kwargs) -> phyre.Evaluator:
         cache = state['cache']
         evaluator = phyre.Evaluator(task_ids)
         for i, task_id in enumerate(task_ids):
@@ -127,16 +164,15 @@ class OracleRankingAgent(AgentWithSimulationCache):
         return 'oracle'
 
     @classmethod
-    def add_parser_arguments(cls, parser):
+    def add_parser_arguments(cls, parser: 'argparse.ArgumentParser') -> None:
         parser = parser.add_argument_group('%s params' % cls.__name__)
-        parser.add_argument(
-            '--oracle-rank-size',
-            type=int,
-            help='How many actions to consider.')
+        parser.add_argument('--oracle-rank-size',
+                            type=int,
+                            help='How many actions to consider.')
 
     @classmethod
-    def eval(cls, state, task_ids, max_attempts_per_task, oracle_rank_size,
-             **kwargs):
+    def eval(cls, state: State, task_ids: TaskIds, max_attempts_per_task: int,
+             oracle_rank_size: int, **kwargs):
         assert oracle_rank_size
         cache = state['cache']
         evaluator = phyre.Evaluator(task_ids)
@@ -147,14 +183,15 @@ class OracleRankingAgent(AgentWithSimulationCache):
             if (statuses == phyre.simulation_cache.SOLVED).any():
                 evaluator.maybe_log_attempt(i, phyre.SimulationStatus.SOLVED)
             else:
-                evaluator.maybe_log_attempt(i, phyre.SimulationStatus.NOT_SOLVED)
+                evaluator.maybe_log_attempt(i,
+                                            phyre.SimulationStatus.NOT_SOLVED)
         return evaluator
 
 
 class MemoizeAgent(AgentWithSimulationCache):
 
     @classmethod
-    def add_parser_arguments(cls, parser):
+    def add_parser_arguments(cls, parser: 'argparse.ArgumentParser') -> None:
         parser = parser.add_argument_group('MEM Agent params')
         parser.add_argument(
             '--mem-test-simulation-weight',
@@ -167,10 +204,9 @@ class MemoizeAgent(AgentWithSimulationCache):
             default=-1,
             type=int,
             help='If positive, will re-rerank only subset of the train actions')
-        parser.add_argument(
-            '--mem-scoring-type',
-            default='relative',
-            choices=('relative', 'absolute'))
+        parser.add_argument('--mem-scoring-type',
+                            default='relative',
+                            choices=('relative', 'absolute'))
         parser.add_argument(
             '--mem-template-aware',
             default=1,
@@ -206,7 +242,8 @@ class MemoizeAgent(AgentWithSimulationCache):
         for i, task_id in enumerate(task_ids):
             statuses = cache.load_simulation_states(task_id)
             to_push = []
-            while regret_action_heap and evaluator.get_attempts_for_task(i) < max_attempts_per_task:
+            while regret_action_heap and evaluator.get_attempts_for_task(
+                    i) < max_attempts_per_task:
                 action_id, success_rate = regret_action_heap.pop_max()
                 status = phyre.SimulationStatus(statuses[action_id])
                 evaluator.maybe_log_attempt(i, status)
@@ -235,10 +272,9 @@ class MemoizeAgent(AgentWithSimulationCache):
     def _train_with_cache(cls, cache, task_ids, tier, **kwargs):
         simulation_statuses = np.stack(
             [cache.load_simulation_states(task_id) for task_id in task_ids], 0)
-        return dict(
-            cache=cache,
-            simulation_statuses=simulation_statuses,
-            train_task_ids=task_ids)
+        return dict(cache=cache,
+                    simulation_statuses=simulation_statuses,
+                    train_task_ids=task_ids)
 
     @classmethod
     def eval(cls, state, task_ids, *args, **kwargs):
@@ -284,15 +320,14 @@ class DQNAgent(AgentWithSimulationCache):
         return 'dqn'
 
     @classmethod
-    def add_parser_arguments(cls, parser):
+    def add_parser_arguments(cls, parser: 'argparse.ArgumentParser') -> None:
         parser = parser.add_argument_group('%s params' % cls.__name__)
         parser.add_argument('--dqn-train-batch-size', type=int, default=32)
         parser.add_argument('--dqn-updates', type=int, default=1000)
-        parser.add_argument(
-            '--dqn-save-checkpoints-every',
-            type=int,
-            default=-1,
-            help='How often to save checkpoints')
+        parser.add_argument('--dqn-save-checkpoints-every',
+                            type=int,
+                            default=-1,
+                            help='How often to save checkpoints')
         parser.add_argument(
             '--dqn-negative-sampling-prob',
             type=float,
@@ -307,11 +342,10 @@ class DQNAgent(AgentWithSimulationCache):
             default=0,
             help='Samples the same number of positives ane negatives for every'
             ' batch.')
-        parser.add_argument(
-            '--dqn-network-type',
-            choices=('resnet18', 'simple'),
-            default='resnet18',
-            help='type of architecture to use')
+        parser.add_argument('--dqn-network-type',
+                            choices=('resnet18', 'simple'),
+                            default='resnet18',
+                            help='type of architecture to use')
         parser.add_argument(
             '--dqn-num-auccess-actions',
             type=int,
@@ -320,20 +354,18 @@ class DQNAgent(AgentWithSimulationCache):
             ' actions.')
         parser.add_argument('--dqn-action-layers', type=int, default=1)
         parser.add_argument('--dqn-action-hidden-size', type=int, default=256)
-        parser.add_argument(
-            '--dqn-eval-every',
-            type=int,
-            default=1000,
-            help='Eval every this many updates.')
-        parser.add_argument(
-            '--dqn-cosine-scheduler',
-            type=int,
-            default=0,
-            help='Whether to use cosine scheduler.')
-        parser.add_argument(
-            '--dqn-fusion-place',
-            choices=('first', 'last', 'all', 'none', 'last_single'),
-            default='last')
+        parser.add_argument('--dqn-eval-every',
+                            type=int,
+                            default=1000,
+                            help='Eval every this many updates.')
+        parser.add_argument('--dqn-cosine-scheduler',
+                            type=int,
+                            default=0,
+                            help='Whether to use cosine scheduler.')
+        parser.add_argument('--dqn-fusion-place',
+                            choices=('first', 'last', 'all', 'none',
+                                     'last_single'),
+                            default='last')
         parser.add_argument('--dqn-learning-rate', type=float, default=3e-4)
 
         # Evaluation time paramters.
@@ -349,18 +381,17 @@ class DQNAgent(AgentWithSimulationCache):
             help='If set, will skip the training and load the model from the'
             ' last checkpoint in the folder. Model architecture and training'
             ' params will be ignored.')
-        parser.add_argument(
-            '--dqn-finetune-iterations',
-            type=int,
-            default=0,
-            help='If set, will fine-tune DQN on test data')
-        parser.add_argument(
-            '--dqn-refine-iterations',
-            type=int,
-            default=0,
-            help='If set, will refine actions for each task')
-        parser.add_argument(
-            '--dqn-refine-loss', choices=('ce', 'linear'), default='ce')
+        parser.add_argument('--dqn-finetune-iterations',
+                            type=int,
+                            default=0,
+                            help='If set, will fine-tune DQN on test data')
+        parser.add_argument('--dqn-refine-iterations',
+                            type=int,
+                            default=0,
+                            help='If set, will refine actions for each task')
+        parser.add_argument('--dqn-refine-loss',
+                            choices=('ce', 'linear'),
+                            default='ce')
         parser.add_argument('--dqn-refine-lr', type=float, default=1e-4)
 
     @classmethod
@@ -402,12 +433,14 @@ class DQNAgent(AgentWithSimulationCache):
 
             finetune_data = []
             for action_id in action_order:
-                if evaluator.get_attempts_for_task(task_index) >= max_attempts_per_task:
+                if evaluator.get_attempts_for_task(
+                        task_index) >= max_attempts_per_task:
                     break
                 action = refined_actions[action_id]
                 if refine_iterations > 0:
-                    status, _ = simulator.simulate_single(
-                        task_index, action, need_images=False)
+                    status, _ = simulator.simulate_single(task_index,
+                                                          action,
+                                                          need_images=False)
                 else:
                     status = phyre.SimulationStatus(statuses[action_id])
                 finetune_data.append((task_index, status, action))
@@ -422,6 +455,7 @@ class DQNAgent(AgentWithSimulationCache):
 
     @classmethod
     def _extract_dqn_flags(cls, **kwargs):
+        """Extract DQN-related train and test command line flags."""
         train_kwargs, eval_kwargs = {}, {}
         for k, v in kwargs.items():
             if k.startswith('dqn_'):
@@ -441,14 +475,13 @@ class DQNAgent(AgentWithSimulationCache):
             model = neural_agent.load_agent_from_folder(dqn_load_from)
         else:
             train_kwargs, _ = cls._extract_dqn_flags(**kwargs)
-            model = neural_agent.train(
-                output_dir,
-                tier,
-                task_ids,
-                cache=cache,
-                max_train_actions=max_train_actions,
-                dev_tasks_ids=dev_tasks_ids,
-                **train_kwargs)
+            model = neural_agent.train(output_dir,
+                                       tier,
+                                       task_ids,
+                                       cache=cache,
+                                       max_train_actions=max_train_actions,
+                                       dev_tasks_ids=dev_tasks_ids,
+                                       **train_kwargs)
         if max_train_actions:
             num_actions = max_train_actions
         else:
