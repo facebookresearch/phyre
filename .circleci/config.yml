@@ -256,7 +256,7 @@ jobs:
            conda remove -n test --all
            conda create -n test python=3.6
            conda activate test
-           pip install install/phyre-0.1.2-cp36-none-macosx_10_0_universal.whl
+           pip install --yes install/phyre-0.1.2-cp36-none-macosx_10_0_universal.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
