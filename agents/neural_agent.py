@@ -426,19 +426,19 @@ def _eval_and_score_actions(cache, model, simulator, num_actions, batch_size,
     actions = cache.action_array[:num_actions]
     indices = np.random.RandomState(1).permutation(
         len(observations))[:AUCCESS_EVAL_TASKS]
-    evaluator = phyre.Evaluator(simulator.task_ids)
-    for task_index in indices:
+    evaluator = phyre.Evaluator(
+        [simulator.task_ids[index] for index in indices])
+    for i, task_index in enumerate(indices):
         scores = eval_actions(model, actions, batch_size,
                               observations[task_index]).tolist()
 
         _, sorted_actions = zip(
             *sorted(zip(scores, actions), key=lambda x: (-x[0], tuple(x[1]))))
         for action in sorted_actions:
-            if (evaluator.get_attempts_for_task(task_index) >=
-                    phyre.MAX_TEST_ATTEMPTS):
+            if (evaluator.get_attempts_for_task(i) >= phyre.MAX_TEST_ATTEMPTS):
                 break
             status, _ = simulator.simulate_single(task_index,
                                                   action,
                                                   need_images=False)
-            evaluator.maybe_log_attempt(task_index, status)
+            evaluator.maybe_log_attempt(i, status)
     return evaluator.get_aucess()
