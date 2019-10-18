@@ -223,13 +223,14 @@ and rel is less than MAX_RELATION.</p>
 
 <dl class="method">
 <dt id="phyre.ActionSimulator.simulate_single">
-<code class="sig-name descname">simulate_single</code><span class="sig-paren">(</span><em class="sig-param">task_index</em>, <em class="sig-param">action</em>, <em class="sig-param">need_images=True</em>, <em class="sig-param">stride=60</em>, <em class="sig-param">stable=False</em><span class="sig-paren">)</span> &#x2192; Tuple[phyre.action_simulator.SimulationStatus, Optional[numpy.ndarray]]<a class="headerlink" href="#phyre.ActionSimulator.simulate_single" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">simulate_single</code><span class="sig-paren">(</span><em class="sig-param">task_index: int, action: Union[Sequence[float], numpy.ndarray], need_images: bool = True, stride: int = 60, stable: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[phyre.action_simulator.SimulationStatus, Optional[numpy.ndarray]]<a class="headerlink" href="#phyre.ActionSimulator.simulate_single" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs simluation for the action.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>task_index</strong> – index of the task.</p></li>
-<li><p><strong>action</strong> – numpy array with the action.</p></li>
+<li><p><strong>action</strong> – numpy array or list of self.action_space_dim floats in
+[0, 1].</p></li>
 <li><p><strong>need_images</strong> – whether simulation images are needed.</p></li>
 <li><p><strong>stride</strong> – int, defines the striding for the simulation images
 array. Higher striding will result in less images and less
