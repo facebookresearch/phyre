@@ -71,7 +71,7 @@ def observations_to_uint8_rgb(scene: np.ndarray,
     base_image = base_image[::-1]
     if is_solved is not None:
         color = SOLVE_STATUS_COLORS[int(is_solved)]
-        line = np.tile(color.reshape((1, 1, 3)), (5, base_image.shape[0], 1))
+        line = np.tile(color.reshape((1, 1, 3)), (5, base_image.shape[1], 1))
         line[:, :5] = WAD_COLORS[0]
         line[:, -5:] = WAD_COLORS[0]
         base_image = np.concatenate([line, base_image], 0)
