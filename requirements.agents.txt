@@ -1,3 +1,3 @@
 torch
 torchvision
-tqdm
+tqdm==4.38.0
