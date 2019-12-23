@@ -74,21 +74,11 @@ def compare(agent_paths):
                         f'{other_agent}?\n\t\t{sig_test.pvalue < 0.01},',
                         f'p-value: {round(sig_test.pvalue, 4)}')
 
-                print('% Independantly solved at 100 attempts')
+                print('% Independently solved at 100 attempts')
                 print(
                     f'\tMean: {round(agent_ind_solved_by.mean(), 3)}\n',
                     f'\tSTD: {round(agent_ind_solved_by.std(), 3)}',
                 )
-                for other_agent in set(agent_paths) - set([agent_dir]):
-                    sig_test = scipy.stats.wilcoxon(
-                        agent_ind_solved_by,
-                        y=np.array(ind_solved_by[other_agent]),
-                        alternative='greater',
-                    )
-                    print('\tIs this agent\'s % indepedantly solved by',
-                          f'significantly higher than {other_agent}?\n\t\t',
-                          f'{sig_test.pvalue < 0.01}, p-value:',
-                          f'{round(sig_test.pvalue, 4)}')
 
         except Exception as e:
             print('Error comparing results for', eval_setup)

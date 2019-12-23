@@ -55,7 +55,8 @@ def main(main_tiers_only):
                                                     action,
                                                     need_images=False)
                     if status != phyre.SimulationStatus.SOLVED:
-                        print('Found bad solution for', task_id, tier, status, i)
+                        print('Found bad solution for', task_id, tier, status,
+                              i)
                         bad.add((template_id, tier))
                         break
     print(sorted(bad))

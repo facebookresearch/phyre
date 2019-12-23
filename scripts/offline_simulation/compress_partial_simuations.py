@@ -22,8 +22,8 @@ import phyre.simulation_cache
 def main_tier(tier, task_ids, num_actions):
     task_ids = sorted(task_ids)
 
-    input_dir = (
-        phyre.simulation_cache.get_partial_cache_folder(num_actions) / tier)
+    input_dir = (phyre.simulation_cache.get_partial_cache_folder(num_actions) /
+                 tier)
     output_dir = (phyre.simulation_cache.get_cache_folder(num_actions) / tier)
     output_dir.mkdir(exist_ok=True, parents=True)
     all_simulations = {}
@@ -51,8 +51,7 @@ def main(num_actions):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--num-actions',
-        type=int,
-        default=phyre.simulation_cache.DEFAULT_NUM_ACTIONS)
+    parser.add_argument('--num-actions',
+                        type=int,
+                        default=phyre.simulation_cache.DEFAULT_NUM_ACTIONS)
     main(**vars(parser.parse_args()))

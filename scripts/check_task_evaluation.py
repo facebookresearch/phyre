@@ -23,11 +23,10 @@ import phyre.settings
 
 def main(verbose):
     if verbose:
-        logging.basicConfig(
-            format=('%(asctime)s %(levelname)-8s'
-                    ' {%(module)s:%(lineno)d} %(message)s'),
-            level=logging.DEBUG,
-            datefmt='%Y-%m-%d %H:%M:%S')
+        logging.basicConfig(format=('%(asctime)s %(levelname)-8s'
+                                    ' {%(module)s:%(lineno)d} %(message)s'),
+                            level=logging.DEBUG,
+                            datefmt='%Y-%m-%d %H:%M:%S')
     print('Creator lib:', phyre.eval_task_complexity.CREATOR_HASH)
     print('Loading all tasks')
     task_scripts = phyre.loader.load_task_scripts_from_folder()

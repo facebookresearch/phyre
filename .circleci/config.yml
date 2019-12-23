@@ -85,7 +85,7 @@ jobs:
       - run:
          command: |
            pip install yapf==0.28.0
-           yapf -r src/python/ agents/ -p --diff
+           yapf -r src/python/ agents/ scripts/ -p --diff
 
   build-linux-wheel:
     docker:

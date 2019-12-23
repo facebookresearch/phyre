@@ -25,8 +25,9 @@ import phyre
 
 
 def _worker(tier, task_id, num_jobs, num_actions, job_id):
-    action_path = (phyre.simulation_cache.get_partial_cache_folder(num_actions)
-                   / tier / phyre.simulation_cache.ACTION_FILE_NAME)
+    action_path = (
+        phyre.simulation_cache.get_partial_cache_folder(num_actions) / tier /
+        phyre.simulation_cache.ACTION_FILE_NAME)
     actions = joblib.load(action_path)
     sim = phyre.initialize_simulator([task_id], tier)
 
@@ -109,10 +110,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num-workers', type=int, required=True)
     parser.add_argument('--task-id', required=True)
-    parser.add_argument(
-        '--tier', choices=phyre.simulation_cache.TIERS, required=True)
-    parser.add_argument(
-        '--num-actions',
-        type=int,
-        default=phyre.simulation_cache.DEFAULT_NUM_ACTIONS)
+    parser.add_argument('--tier',
+                        choices=phyre.simulation_cache.TIERS,
+                        required=True)
+    parser.add_argument('--num-actions',
+                        type=int,
+                        default=phyre.simulation_cache.DEFAULT_NUM_ACTIONS)
     main(**vars(parser.parse_args()))
