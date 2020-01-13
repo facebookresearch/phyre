@@ -17,7 +17,7 @@ set -e
 
 ROOT="$(dirname "$0")/../"
 
-clang-format \
+clang-format-8 \
         -style google \
         -i \
         $(find "$ROOT/src/simulator" -name '*.cpp' -or -name '*.h')

@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <math.h>
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -23,6 +24,7 @@
 #include "geometry.h"
 #include "image_to_box2d.h"
 #include "logger.h"
+#include "task_utils.h"
 
 #include "gen-cpp/scene_types.h"
 #include "gen-cpp/shared_constants.h"
@@ -325,8 +327,8 @@ bool isPointInsideBody(const ::scene::Vector& pPoint, const Body& pBody) {
 
 bool mergeUserInputIntoScene(const ::scene::UserInput& userInput,
                              const std::vector<Body>& sceneBodies,
-                             bool keepSpaceAroundBodies, int height, int width,
-                             std::vector<Body>* bodies) {
+                             bool keepSpaceAroundBodies, bool allowOcclusions,
+                             int height, int width, std::vector<Body>* bodies) {
   bool good = true;
   // 1. Adding balls.
   for (const ::scene::CircleWithPosition& ball : userInput.balls) {
@@ -338,7 +340,7 @@ bool mergeUserInputIntoScene(const ::scene::UserInput& userInput,
         break;
       }
     }
-    if (!hasOcclusions) {
+    if (!hasOcclusions || allowOcclusions) {
       bodies->push_back(
           buildCircle(ball.position.x, ball.position.y, ball.radius));
     }
@@ -363,7 +365,7 @@ bool mergeUserInputIntoScene(const ::scene::UserInput& userInput,
         break;
       }
     }
-    if (!hasOcclusions) {
+    if (!hasOcclusions || allowOcclusions) {
       bodies->push_back(absolutePolygonToBody(polygon));
     }
   }
@@ -396,4 +398,42 @@ vector<IntVector> cleanUpPoints(const vector<IntVector>& input_points,
   // TODO: re-implement without opencv.
   vector<IntVector> points;
   return points;
+}
+
+void featurizeScene(const ::scene::Scene& scene, float* buffer) {
+  int writeIndex = 0;
+  std::vector<Body> bodies = scene.bodies;
+  bodies.insert(bodies.end(), scene.user_input_bodies.begin(),
+                scene.user_input_bodies.end());
+  for (const Body& body : bodies) {
+    if (body.shapeType != ::scene::ShapeType::UNDEFINED) {
+      featurizeBody(body, scene.height, scene.width, buffer + writeIndex);
+      writeIndex += kObjectFeatureSize;
+    }
+  }
+}
+
+// Convert angle in (-float-min, float-max) to be in [0,2pi)
+float wrapAngleRadians(float angle) {
+  angle = fmod(angle, 2.0 * M_PI);
+  if (angle < 0.0) {
+    angle += 2.0 * M_PI;
+  }
+  return angle;
+}
+
+void featurizeBody(const Body& body, int sceneHeight, int sceneWidth,
+                   float* buffer) {
+  static_assert(kObjectFeatureSize == 14);
+  *buffer++ = static_cast<float>(body.position.x) / sceneWidth;
+  *buffer++ = static_cast<float>(body.position.y) / sceneHeight;
+  *buffer++ = wrapAngleRadians(body.angle) / (2. * M_PI);
+  *buffer++ = static_cast<float>(body.diameter) / sceneWidth;
+  // One hot encode the shapeTyoe and color
+  for (int i = 0; i < kNumShapes; ++i) {
+    *buffer++ = static_cast<float>(i == body.shapeType - 1);
+  }
+  for (int i = 0; i < kNumColors; ++i) {
+    *buffer++ = static_cast<float>(i == body.color - 1);
+  }
 }

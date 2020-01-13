@@ -61,7 +61,7 @@ def get_solution_power(tier, template_id, eval_data):
     task_solutions = np.zeros((len(all_sols), len(task_ids)))
     for (sol_i, task_i) in itertools.product(range(len(all_sols)),
                                              range(len(task_ids))):
-        status, _ = simulator.simulate_single(task_i, all_sols[sol_i])
+        status = simulator.simulate_action(task_i, all_sols[sol_i]).status
         task_solutions[sol_i][task_i] = 1 if status.is_solved() else 0
     return task_solutions, task_ids, tier
 

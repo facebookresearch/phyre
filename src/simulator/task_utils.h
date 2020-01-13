@@ -19,6 +19,9 @@
 #include "gen-cpp/scene_types.h"
 #include "gen-cpp/task_types.h"
 
+constexpr unsigned kObjectFeatureSize = 14;
+constexpr unsigned kNumColors = 6;
+constexpr unsigned kNumShapes = 4;
 constexpr unsigned kFps = 60;
 constexpr float kTimeStep = 1.0f / kFps;
 constexpr unsigned kVelocityIterations = 15;

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <gtest/gtest.h>
+#include <math.h>
 
 #include "creator.h"
 #include "gen-cpp/scene_types.h"
@@ -59,6 +60,7 @@ TEST(UserInputTest, SegfaultUserInput) {
   ::task::Task task = getTaskFromPath(kTestTaskFolder + "/task00045:000.bin");
   auto bodies = mergeUserInputIntoScene(userInput, task.scene.bodies,
                                         /*keep_space_around_bodies=*/true,
+                                        /*allow_occlusions=*/false,
                                         task.scene.width, task.scene.height);
   task.scene.__set_user_input_bodies(bodies);
   simulateTask(task, 1000);
@@ -416,10 +418,10 @@ TEST(AddUserInputTest, DISABLED_AddPoints) {
   user_input.flattened_point_list.push_back(5);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/false, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/false, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 1);
   ASSERT_EQ(good_input, true);
 }
@@ -440,10 +442,10 @@ TEST(AddUserInputTest, AddRectangle) {
   user_input.polygons.push_back(polygon);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 1);
   ASSERT_EQ(good_input, true);
 }
@@ -464,10 +466,10 @@ TEST(AddUserInputTest, AddOccludingRectangle) {
   user_input.polygons.push_back(polygon);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 0);
   ASSERT_EQ(good_input, false);
 }
@@ -478,20 +480,22 @@ TEST(AddUserInputTest, AddBall) {
   scene.__set_width(6);
   const std::vector<::scene::Body> bodies = {buildBox(1, 1, 2, 3)};
   scene.__set_bodies(bodies);
-
+  const float radius = 1.0;
   ::scene::CircleWithPosition ball;
   ball.position.__set_x(5);
   ball.position.__set_y(5);
-  ball.__set_radius(1);
+  ball.__set_radius(radius);
   ::scene::UserInput user_input;
   user_input.balls.push_back(ball);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 1);
+  ASSERT_EQ(user_bodies[0].shapeType, ::scene::ShapeType::BALL);
+  ASSERT_EQ(user_bodies[0].diameter, 2.0 * radius);
   ASSERT_EQ(good_input, true);
 }
 
@@ -510,10 +514,10 @@ TEST(AddUserInputTest, AddOccludingBall) {
   user_input.balls.push_back(ball);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 0);
   ASSERT_EQ(good_input, false);
 }
@@ -534,10 +538,10 @@ TEST(AddUserInputTest, AddOccludingBallForBallScene) {
   user_input.balls.push_back(ball);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 0);
   ASSERT_EQ(good_input, false);
 }
@@ -550,18 +554,39 @@ TEST(AddUserInputTest, AddBallForBallScene) {
   scene.__set_bodies(bodies);
 
   // Distance is 2.
+  const float radius = 0.5;
   ::scene::CircleWithPosition ball;
   ball.position.__set_x(4);
   ball.position.__set_y(3);
-  ball.__set_radius(0.5);
+  ball.__set_radius(radius);
   ::scene::UserInput user_input;
   user_input.balls.push_back(ball);
 
   std::vector<::scene::Body> user_bodies;
-  bool good_input =
-      mergeUserInputIntoScene(user_input, bodies,
-                              /*keep_space_around_bodies=*/true, scene.height,
-                              scene.width, &user_bodies);
+  bool good_input = mergeUserInputIntoScene(
+      user_input, bodies,
+      /*keep_space_around_bodies=*/true, /*allow_occlusions=*/false,
+      scene.height, scene.width, &user_bodies);
   ASSERT_EQ(user_bodies.size(), 1);
+  ASSERT_EQ(user_bodies[0].shapeType, ::scene::ShapeType::BALL);
+  ASSERT_EQ(user_bodies[0].diameter, 2.0 * radius);
   ASSERT_EQ(good_input, true);
+}
+
+TEST(WrapAngleTest, TestAngles) {
+  auto const smallPos = 0.7 * 2. * M_PI;
+  auto const medPos = 1.5 * 2. * M_PI;
+  auto const largePos = 2.3 * 2. * M_PI;
+
+  auto const smallNeg = -0.4 * 2. * M_PI;
+  auto const medNeg = -1.2 * 2. * M_PI;
+  auto const largeNeg = -3.7 * 2. * M_PI;
+
+  ASSERT_TRUE(abs(wrapAngleRadians(smallPos) - smallPos) < 1e-6);
+  ASSERT_TRUE(abs(wrapAngleRadians(medPos) - (0.5 * 2. * M_PI)) < 1e-6);
+  ASSERT_TRUE(abs(wrapAngleRadians(largePos) - (0.3 * 2. * M_PI)) < 1e-6);
+
+  ASSERT_TRUE(abs(wrapAngleRadians(smallNeg) - (0.6 * 2. * M_PI)) < 1e-6);
+  ASSERT_TRUE(abs(wrapAngleRadians(medNeg) - (0.8 * 2. * M_PI)) < 1e-6);
+  ASSERT_TRUE(abs(wrapAngleRadians(largeNeg) - (0.3 * 2. * M_PI)) < 1e-6);
 }

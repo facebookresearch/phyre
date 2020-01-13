@@ -27,6 +27,7 @@ class TaskCreatorTestCase(unittest.TestCase):
 
         # Loop over all valid objects.
         random.seed(0)
+        builders = phyre.creator.shapes.get_builders()
         for dynamic in phyre.creator.constants.DYNAMIC_VALUES:
             color_ids = (phyre.creator.constants.DYNAMIC_COLOR_IDS
                          if dynamic == 'dynamic' else
@@ -47,6 +48,11 @@ class TaskCreatorTestCase(unittest.TestCase):
                     self.assertEqual(body.dynamic, dynamic == 'dynamic')
                     self.assertEqual(body.color, color)
                     self.assertEqual(body.object_type, object_type)
+                    self.assertEqual(body._thrift_body.shapeType,
+                                     builders[object_type].SHAPE_TYPE)
+                    target_diameter = builders[object_type].diameter(scale)
+                    self.assertEqual(body._thrift_body.diameter,
+                                     target_diameter)
 
     def test_object_types_reachable(self):
         for name in phyre.creator.shapes.get_builders():

@@ -33,23 +33,24 @@
 // objects or points were removed.
 bool mergeUserInputIntoScene(const ::scene::UserInput& userInput,
                              const std::vector<::scene::Body>& sceneBodies,
-                             bool keepSpaceAroundBodies, int height, int width,
+                             bool keepSpaceAroundBodies, bool allowOcclusions,
+                             int height, int width,
                              std::vector<::scene::Body>* bodies);
 
 inline std::vector<::scene::Body> mergeUserInputIntoScene(
     const ::scene::UserInput& userInput,
     const std::vector<::scene::Body>& sceneBodies, bool keepSpaceAroundBodies,
-    int height, int width) {
+    bool allowOcclusions, int height, int width) {
   std::vector<::scene::Body> bodies;
-  mergeUserInputIntoScene(userInput, sceneBodies, keepSpaceAroundBodies, height,
-                          width, &bodies);
+  mergeUserInputIntoScene(userInput, sceneBodies, keepSpaceAroundBodies,
+                          allowOcclusions, height, width, &bodies);
   return bodies;
 }
 
 inline std::vector<::scene::Body> mergeUserInputIntoScene(
     const std::vector<::scene::IntVector>& input_points,
     const std::vector<::scene::Body>& sceneBodies, bool keepSpaceAroundBodies,
-    int height, int width) {
+    bool allowOcclusions, int height, int width) {
   ::scene::UserInput userInput;
   userInput.flattened_point_list.reserve(input_points.size() * 2);
   for (const auto& p : input_points) {
@@ -57,7 +58,7 @@ inline std::vector<::scene::Body> mergeUserInputIntoScene(
     userInput.flattened_point_list.push_back(p.y);
   }
   return mergeUserInputIntoScene(userInput, sceneBodies, keepSpaceAroundBodies,
-                                 height, width);
+                                 allowOcclusions, height, width);
 }
 
 ::scene::Image render(const std::vector<::scene::Body>& sceneBodies,
@@ -78,5 +79,10 @@ std::vector<::scene::IntVector> cleanUpPoints(
     const std::vector<::scene::IntVector>& input_points,
     const std::vector<::scene::Body>& sceneBodies, const unsigned height,
     const unsigned width);
+
+float wrapAngleRadians(float angle);
+void featurizeScene(const ::scene::Scene& scene, float* buffer);
+void featurizeBody(const ::scene::Body& body, int sceneHeight, int sceneWidth,
+                   float* buffer);
 
 #endif  // IMAGE_TO_BOX2D_H

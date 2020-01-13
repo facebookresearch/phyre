@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "gen-cpp/scene_types.h"
+#include "task_utils.h"
 
 bool cmpIntVector(const ::scene::IntVector& a, const ::scene::IntVector& b) {
   if (a.x < b.x) {
@@ -58,6 +59,8 @@ bool cmpIntVector(const ::scene::IntVector& a, const ::scene::IntVector& b) {
   body.__set_shapes({shape});
   const auto color = static_cast<::shared::Color::type>(1);
   body.__set_color(color);
+  body.__set_diameter(2.0 * radius);
+  body.__set_shapeType(::scene::ShapeType::BALL);
   body.bodyType =
       dynamic ? ::scene::BodyType::DYNAMIC : ::scene::BodyType::STATIC;
   return body;
@@ -76,6 +79,7 @@ bool cmpIntVector(const ::scene::IntVector& a, const ::scene::IntVector& b) {
   body.__set_shapes({shape});
   const auto color = static_cast<::shared::Color::type>(1);
   body.__set_color(color);
+  body.__set_shapeType(::scene::ShapeType::UNDEFINED);
   body.bodyType =
       dynamic ? ::scene::BodyType::DYNAMIC : ::scene::BodyType::STATIC;
   return body;

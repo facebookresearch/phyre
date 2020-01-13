@@ -69,8 +69,8 @@ class BackendTest : public ::testing::Test {
       }
     }
     std::vector<scene::Body> user_input_bodies = mergeUserInputIntoScene(
-        inputPoints, bodies, /*keep_space_around_bodies=*/true, WORLD_HEIGHT,
-        WORLD_WIDTH);
+        inputPoints, bodies, /*keep_space_around_bodies=*/true,
+        /*allow_occlusions=*/false, WORLD_HEIGHT, WORLD_WIDTH);
 
     scene::Scene scene;
     scene.__set_bodies(bodies);

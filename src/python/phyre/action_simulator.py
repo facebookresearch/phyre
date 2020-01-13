@@ -26,7 +26,9 @@ import numpy as np
 import phyre.action_mappers
 import phyre.loader
 import phyre.simulator
+import phyre.interface.scene.ttypes as scene_if
 import phyre.interface.task.ttypes as task_if
+import phyre.simulation
 
 MAX_RELATION = max(task_if.SpatialRelationship._VALUES_TO_NAMES) + 1
 # First 4 objects are walls. Everything else are visible objects and encoded
@@ -36,6 +38,7 @@ MAX_GOAL = max(MAX_RELATION, MAX_OBJECT_TYPE)
 
 ActionLike = Union[Sequence[float], np.ndarray]
 MaybeImages = Optional[np.ndarray]
+MaybeObjects = Optional[np.ndarray]
 
 
 class SimulationStatus(enum.IntEnum):
@@ -88,7 +91,8 @@ class ActionSimulator():
         else:
             self.tier = 'unknown'
         self._action_mapper = action_mapper
-        self._initial_scenes, self._goals = _get_observations(self._tasks)
+        self._initial_scenes, self._initial_featurized_objects, self._goals = _get_observations(
+            self._tasks, self._action_mapper)
         if no_goals:
             self._goals = None
         self._serialized = tuple(
@@ -128,6 +132,15 @@ class ActionSimulator():
         return self._initial_scenes
 
     @property
+    def initial_featurized_objects(self) -> np.ndarray:
+        """Inital scene objects featurized for each task before agent input.
+        
+        List (length tasks) of FeaturizedObjects containing float arrays of size
+        (number scene objects, OBJECT_FEATURE_SIZE).
+        """
+        return self._initial_featurized_objects
+
+    @property
     def goals(self) -> Optional[np.ndarray]:
         """Represents goals for each task.
 
@@ -148,8 +161,9 @@ class ActionSimulator():
         user_input, is_valid = self._action_mapper.action_to_user_input(action)
         return user_input, is_valid
 
-    def _simulate_user_input(self, task_index, user_input, need_images,
-                             stride) -> Tuple[SimulationStatus, MaybeImages]:
+    def _simulate_user_input(
+            self, task_index, user_input, need_images, need_featurized_objects,
+            stride) -> Tuple[SimulationStatus, MaybeImages, MaybeObjects]:
         serialzed_task = self._serialized[task_index]
         # FIXME: merge this into single call to simulator.
         if not self._action_mapper.OCCLUSIONS_ALLOWED:
@@ -157,17 +171,21 @@ class ActionSimulator():
                     serialzed_task,
                     user_input,
                     keep_space_around_bodies=self._keep_spaces):
-                return SimulationStatus.INVALID_INPUT, None
+                return SimulationStatus.INVALID_INPUT, None, None
 
-        if not need_images:
+        if not need_images and not need_featurized_objects:
             stride = 100000
-        is_solved, had_occlusions, images = phyre.simulator.magic_ponies(
+        is_solved, had_occlusions, images, objects = phyre.simulator.magic_ponies(
             serialzed_task,
             user_input,
             stride=stride,
-            keep_space_around_bodies=self._keep_spaces)
+            keep_space_around_bodies=self._keep_spaces,
+            need_images=need_images,
+            need_featurized_objects=need_featurized_objects)
         if not need_images:
             images = None
+        if not need_featurized_objects:
+            objects = None
 
         # We checked for occulsions before simulation, so being here means we
         # have a bug.
@@ -178,7 +196,7 @@ class ActionSimulator():
         else:
             status = SimulationStatus.NOT_SOLVED
 
-        return status, images
+        return status, images, objects
 
     def simulate_single(self,
                         task_index: int,
@@ -187,7 +205,8 @@ class ActionSimulator():
                         stride: int = phyre.simulator.DEFAULT_STRIDE,
                         stable: bool = False
                        ) -> Tuple[SimulationStatus, MaybeImages]:
-        """Runs simluation for the action.
+        """Deprecated in version 0.2.0 in favor of simulate_action.
+        Runs simluation for the action.
 
         Args:
             task_index: index of the task.
@@ -210,23 +229,76 @@ class ActionSimulator():
                 * Otherwise images is an array contains intermediate observations.
              * If need_images is False: returns (status, None).
         """
+        simulation = self.simulate_action(task_index,
+                                          action,
+                                          need_images=need_images,
+                                          need_featurized_objects=False,
+                                          stride=stride,
+                                          stable=stable)
+        return simulation.simulation_status, simulation.images
+
+    def simulate_action(self,
+                        task_index: int,
+                        action: ActionLike,
+                        *,
+                        need_images: bool = True,
+                        need_featurized_objects: bool = False,
+                        stride: int = phyre.simulator.DEFAULT_STRIDE,
+                        stable: bool = False) -> phyre.simulation.Simulation:
+        """Runs simluation for the action.
+
+        Args:
+            task_index: index of the task.
+            action: numpy array or list of self.action_space_dim floats in
+                [0, 1].
+            need_images: whether simulation images are needed.
+            need_featurized_objects: whether simulation featurized_objects are needed.
+            stride: int, defines the striding for the simulation images
+                array. Higher striding will result in less images and less
+                compute. Note, that this parameter doesn't affect simulation
+                FPS. Ignored if need_images is False.
+            stable: if True, will simulate a few actions in the neigborhood
+                of the actions and return STABLY_SOLVED status iff all
+                neigbour actions are either SOLVED or INVALID. Otherwise
+                UNSTABLY_SOLVED is returned. SOLVED is never returned if
+                stable is set.
+
+        Returns:
+             * phyre.simulation.Simulation object containing the result of
+                the simulation. 
+             * SimulationStatus, images, and featurized_objects are easily
+                 accesible with simulation.simulation_status, simulation.images,
+                 and simulation.featurized_objects.
+        """
         user_input, is_valid = self._get_user_input(action)
         if not is_valid:
-            return SimulationStatus.INVALID_INPUT, None
+            return phyre.simulation.Simulation(
+                status=SimulationStatus.INVALID_INPUT)
 
-        main_status, images = self._simulate_user_input(task_index, user_input,
-                                                        need_images, stride)
+        main_status, images, objects = self._simulate_user_input(
+            task_index, user_input, need_images, need_featurized_objects,
+            stride)
         if not stable or not main_status.is_solved():
-            return main_status, images
+            return phyre.simulation.Simulation(status=main_status,
+                                               images=images,
+                                               featurized_objects=objects)
 
         for modified_user_input in _yield_user_input_neighborhood(user_input):
-            status, _ = self._simulate_user_input(task_index,
-                                                  modified_user_input,
-                                                  need_images=False,
-                                                  stride=stride)
+            status, _, _ = self._simulate_user_input(
+                task_index,
+                modified_user_input,
+                need_images=False,
+                need_featurized_objects=False,
+                stride=stride)
             if status.is_not_solved():
-                return SimulationStatus.UNSTABLY_SOLVED, images
-        return SimulationStatus.STABLY_SOLVED, images
+                return phyre.simulation.Simulation(
+                    status=SimulationStatus.UNSTABLY_SOLVED,
+                    images=images,
+                    featurized_objects=objects)
+        return phyre.simulation.Simulation(
+            status=SimulationStatus.STABLY_SOLVED,
+            images=images,
+            featurized_objects=objects)
 
 
 def _yield_user_input_neighborhood(base_user_input):
@@ -257,17 +329,21 @@ def _encode_goal(task):
     return obj1_code, rel, obj2_code
 
 
-def _get_observations(tasks: Sequence[task_if.Task]
-                     ) -> Tuple[np.ndarray, np.ndarray]:
+def _get_observations(
+        tasks: Sequence[task_if.Task],
+        action_mapper=None,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Encode the initial scene and the goal as arrays.
 
     Args:
         task: list of thift tasks.
 
     Returns:
-        A pair (scenes, goals).
-
+        A tuple (scenes, objects, goals).
         scenes: uint8 array with shape (task, height, width).
+        featurized_objects: list (length tasks) of FeaturizedObjects 
+            contianing float arrays of size
+            (number scene objects, OBJECT_FEATURE_SIZE).
         goals: uint8 array with shape (task, 3).
             Each goal is encoded with three numbers: (obj_type1,
                 obj_type2, rel). All three are less than MAX_GOAL. To be more
@@ -276,8 +352,12 @@ def _get_observations(tasks: Sequence[task_if.Task]
     """
     scenes = np.stack(
         [phyre.simulator.scene_to_raster(task.scene) for task in tasks])
+    featurized_objects = [
+        phyre.simulator.scene_to_featurized_objects(task.scene)
+        for task in tasks
+    ]
     goals = np.array([_encode_goal(task) for task in tasks], dtype=np.uint8)
-    return (scenes, goals)
+    return (scenes, featurized_objects, goals)
 
 
 def initialize_simulator(task_ids: Sequence[str],

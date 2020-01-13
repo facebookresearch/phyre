@@ -132,7 +132,7 @@ Experiment runExperiment(const std::string& scene_name,
   {
     const auto userBodies = mergeUserInputIntoScene(
         userInput, scene.bodies, /*keep_space_around_bodies=*/true,
-        scene.height, scene.width);
+        /*allow_occlusions=*/false, scene.height, scene.width);
     sceneWithUserInput.__set_user_input_bodies(userBodies);
   }
   Scene sceneWithLimitedUserInput = scene;
@@ -152,7 +152,8 @@ Experiment runExperiment(const std::string& scene_name,
   measurements.push_back(timeIt(
       [=]() {
         mergeUserInputIntoScene(userInput, scene.bodies,
-                                /*keep_space_around_bodies=*/true, scene.height,
+                                /*keep_space_around_bodies=*/true,
+                                /*allow_occlusions=*/false, scene.height,
                                 scene.width);
       },
       kRetries));

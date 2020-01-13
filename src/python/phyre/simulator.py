@@ -21,10 +21,12 @@ import phyre.interface.scene.ttypes as scene_if
 import phyre.interface.task.ttypes as task_if
 from phyre import creator
 from phyre import simulator_bindings
+import phyre.simulation
 
 DEFAULT_MAX_STEPS = simulator_bindings.DEFAULT_MAX_STEPS
 STEPS_FOR_SOLUTION = simulator_bindings.STEPS_FOR_SOLUTION
 DEFAULT_STRIDE = simulator_bindings.FPS
+OBJECT_FEATURE_SIZE = simulator_bindings.OBJECT_FEATURE_SIZE
 
 FACTORY = TBinaryProtocol.TBinaryProtocolAcceleratedFactory()
 
@@ -89,7 +91,10 @@ def check_for_occlusions(task, user_input, keep_space_around_bodies=True):
             task, points, rectangulars, balls, keep_space_around_bodies)
 
 
-def add_user_input_to_scene(scene, user_input, keep_space_around_bodies=True):
+def add_user_input_to_scene(scene,
+                            user_input,
+                            keep_space_around_bodies=True,
+                            allow_occlusions=False):
     """Converts user input to objects in the scene.
 
     Args:
@@ -108,7 +113,8 @@ def add_user_input_to_scene(scene, user_input, keep_space_around_bodies=True):
         scene_if.Scene(),
         simulator_bindings.add_user_input_to_scene(serialize(scene),
                                                    serialize(user_input),
-                                                   keep_space_around_bodies))
+                                                   keep_space_around_bodies,
+                                                   allow_occlusions))
 
 
 def simulate_task_with_input(task,
@@ -136,6 +142,17 @@ def scene_to_raster(scene):
     """
     pixels = simulator_bindings.render(serialize(scene))
     return np.array(pixels).reshape((scene.height, scene.width))
+
+
+def scene_to_featurized_objects(scene):
+    """Convert scene to a FeaturizedObjects containing featurs of size
+     num_objects x OBJECT_FEATURE_SIZE."""
+    object_vector = simulator_bindings.featurize_scene(serialize(scene))
+    object_vector = np.array(object_vector, dtype=np.float32).reshape(
+        (-1, OBJECT_FEATURE_SIZE))
+    return phyre.simulation.FeaturizedObjects(
+        phyre.simulation.finalize_featurized_objects(
+            np.expand_dims(object_vector, axis=0)))
 
 
 def _deep_flatten(iterable):
@@ -173,7 +190,9 @@ def magic_ponies(task,
                  steps=DEFAULT_MAX_STEPS,
                  stride=DEFAULT_STRIDE,
                  keep_space_around_bodies=True,
-                 with_times=False):
+                 with_times=False,
+                 need_images=False,
+                 need_featurized_objects=False):
     """Check a solution for a task and return intermidiate images.
 
     Args:
@@ -194,13 +213,16 @@ def magic_ponies(task,
         keep_space_around_bodies: bool, if True extra empty space will be
             enforced around scene bodies.
         with_times: A boolean flag indicating whether timing info is required.
+        need_images: A boolean flag indicating whether images should be returned.
+        need_featurized_objects: A boolean flag indicating whether objects should be returned.
 
     Returns:
-        A tuple (is_solved, had_occlusions, images) if with_times is False.
+        A tuple (is_solved, had_occlusions, images, objects) if with_times is False.
             is_solved: bool.
             had_occlusions: bool.
             images a numpy arrays of shape (num_steps, height, width).
-        A tuple (is_solved, had_occlusions, images, simulation_time, pack_time)
+            objects is a numpy array of shape (num_steps, num_objects, feature_size).
+        A tuple (is_solved, had_occlusions, images, scenes, simulation_time, pack_time)
                 if with_times is set.
             simulation_time: time spent inside C++ code to unpack and simulate.
             pack_time: time spent inside C++ code to pack the result.
@@ -211,28 +233,35 @@ def magic_ponies(task,
     else:
         serialized_task = serialize(task)
         height, width = task.scene.height, task.scene.width
-
     if isinstance(user_input, scene_if.UserInput):
-        is_solved, had_occlusions, packed_images, sim_time, pack_time = (
+        is_solved, had_occlusions, packed_images, packed_featurized_objects, number_objects, sim_time, pack_time = (
             simulator_bindings.magic_ponies_general(serialized_task,
                                                     serialize(user_input),
                                                     keep_space_around_bodies,
-                                                    steps, stride))
+                                                    steps, stride, need_images,
+                                                    need_featurized_objects))
     else:
         points, rectangulars, balls = _prepare_user_input(*user_input)
-        is_solved, had_occlusions, packed_images, sim_time, pack_time = (
+        is_solved, had_occlusions, packed_images, packed_featurized_objects, number_objects, sim_time, pack_time = (
             simulator_bindings.magic_ponies(serialized_task, points,
                                             rectangulars, balls,
                                             keep_space_around_bodies, steps,
-                                            stride))
+                                            stride, need_images,
+                                            need_featurized_objects))
 
     packed_images = np.array(packed_images, dtype=np.uint8)
 
     images = packed_images.reshape((-1, height, width))
+    packed_featurized_objects = np.array(packed_featurized_objects,
+                                         dtype=np.float32)
+    packed_featurized_objects = packed_featurized_objects.reshape(
+        (-1, number_objects, OBJECT_FEATURE_SIZE))
+    packed_featurized_objects = phyre.simulation.finalize_featurized_objects(
+        packed_featurized_objects)
     if with_times:
-        return is_solved, had_occlusions, images, sim_time, pack_time
+        return is_solved, had_occlusions, images, packed_featurized_objects, sim_time, pack_time
     else:
-        return is_solved, had_occlusions, images
+        return is_solved, had_occlusions, images, packed_featurized_objects
 
 
 def batched_magic_ponies(tasks,
@@ -241,7 +270,9 @@ def batched_magic_ponies(tasks,
                          steps=DEFAULT_MAX_STEPS,
                          stride=DEFAULT_STRIDE,
                          keep_space_around_bodies=True,
-                         with_times=False):
+                         with_times=False,
+                         need_images=False,
+                         need_featurized_objects=False):
     del num_workers  # Not used.
     return tuple(
         zip(*[
@@ -250,6 +281,8 @@ def batched_magic_ponies(tasks,
                          steps=steps,
                          stride=stride,
                          keep_space_around_bodies=keep_space_around_bodies,
-                         with_times=with_times)
+                         with_times=with_times,
+                         need_images=need_images,
+                         need_featurized_objects=need_featurized_objects)
             for t, ui in zip(tasks, user_inputs)
         ]))

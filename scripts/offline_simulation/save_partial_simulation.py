@@ -33,7 +33,7 @@ def _worker(tier, task_id, num_jobs, num_actions, job_id):
 
     actions = np.array_split(actions, num_jobs)[job_id]
     statuses = [
-        int(sim.simulate_single(0, action, need_images=False)[0])
+        int(sim.simulate_action(0, action, need_images=False).status)
         for action in actions
     ]
     return statuses

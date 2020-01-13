@@ -437,8 +437,8 @@ def _eval_and_score_actions(cache, model, simulator, num_actions, batch_size,
         for action in sorted_actions:
             if (evaluator.get_attempts_for_task(i) >= phyre.MAX_TEST_ATTEMPTS):
                 break
-            status, _ = simulator.simulate_single(task_index,
-                                                  action,
-                                                  need_images=False)
+            status = simulator.simulate_action(task_index,
+                                               action,
+                                               need_images=False).status
             evaluator.maybe_log_attempt(i, status)
     return evaluator.get_aucess()

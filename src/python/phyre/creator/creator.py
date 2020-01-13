@@ -162,7 +162,8 @@ class TaskCreator(object):
                                **builder_kwargs):
         """Create and add new Body object given a ShapeBuider and its params."""
         shapes, phantom_vertices = builder.build(**builder_kwargs)
-        body = Body(shapes, dynamic, body_type, phantom_vertices)
+        diameter = builder.diameter(**builder_kwargs)
+        body = Body(shapes, dynamic, body_type, diameter, phantom_vertices)
         # FIXME(akhti): get rid of scene.bodies vs body_list duplication.
         self.scene.bodies.append(body._thrift_body)
         self.body_list.append(body)
@@ -269,14 +270,19 @@ class Body(object):
         box2 = Body(...).set(color='blue', bottom=ball.top + 10)
 
     Body also carries meta information about object type, that doesn't exist
-    in the interface file. The field is used to refer to objects in tasks.
-    If the value is not None, it must present in OBJECT_TYPES list.
+    in the interface file (only high level object type data is stored). The
+    field is used to refer to objects in tasks. If the value is not None,
+    it must present in OBJECT_TYPES list.
 
     The user generally does not instantiate this object directly.
     """
 
-    def __init__(self, shapes, dynamic, object_type, phantom_vertices=None):
-
+    def __init__(self,
+                 shapes,
+                 dynamic,
+                 object_type,
+                 diameter=None,
+                 phantom_vertices=None):
         # Create Thrift body.
         x = y = 0.0
         body = scene_if.Body(
@@ -287,13 +293,21 @@ class Body(object):
         assert dynamic in [True, False]
         body.bodyType = (scene_if.BodyType.DYNAMIC
                          if dynamic else scene_if.BodyType.STATIC)
+
+        self.set_object_type(object_type)
+        if object_type is not None:
+            obj_name = 'wall' if 'wall' in object_type else object_type
+            shape_type = shapes_lib.get_builders()[obj_name].SHAPE_TYPE
+            if shape_type:
+                body.shapeType = shape_type
+        if diameter is not None:
+            body.diameter = diameter
         self.phantom_vertices = phantom_vertices
 
         # Set all class variables.
         self._thrift_body = body
         self._scene = None
         self.dynamic = dynamic
-        self.set_object_type(object_type)
         color = (_role_to_color_name('DYNAMIC')
                  if dynamic else _role_to_color_name('STATIC'))
         self.set_color(color)

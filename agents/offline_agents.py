@@ -438,9 +438,10 @@ class DQNAgent(AgentWithSimulationCache):
                     break
                 action = refined_actions[action_id]
                 if refine_iterations > 0:
-                    status, _ = simulator.simulate_single(task_index,
-                                                          action,
-                                                          need_images=False)
+                    status = simulator.simulate_action(task_index,
+                                                       action,
+                                                       need_images=False,
+                                                       need_scenes=False).status
                 else:
                     status = phyre.SimulationStatus(statuses[action_id])
                 finetune_data.append((task_index, status, action))

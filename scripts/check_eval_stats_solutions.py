@@ -51,9 +51,9 @@ def main(main_tiers_only):
                 if task_id not in sim.task_ids:
                     continue
                 for i, action in enumerate(actions):
-                    status, _ = sim.simulate_single(sim.task_ids.index(task_id),
-                                                    action,
-                                                    need_images=False)
+                    status = sim.simulate_action(sim.task_ids.index(task_id),
+                                                 action,
+                                                 need_images=False).status
                     if status != phyre.SimulationStatus.SOLVED:
                         print('Found bad solution for', task_id, tier, status,
                               i)

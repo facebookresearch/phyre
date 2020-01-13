@@ -30,7 +30,7 @@ def _eval_single_task(task_id, action_tier_name, attempts):
     real_attempts = 0
     for _ in range(attempts):
         action = action_simulator.sample()
-        status, _ = action_simulator.simulate_single(0, action)
+        status = action_simulator.simulate_action(0, action).status
         if status == phyre.SimulationStatus.SOLVED:
             return (task_id, action, real_attempts)
         if status != phyre.SimulationStatus.INVALID_INPUT:

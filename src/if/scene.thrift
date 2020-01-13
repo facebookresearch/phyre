@@ -32,6 +32,14 @@ enum BodyType {
   DYNAMIC = 2,
 }
 
+enum ShapeType {
+  UNDEFINED = 0,
+  BALL = 1,
+  BAR = 2,
+  JAR = 3,
+  STANDINGSTICKS = 4,
+}
+
 // Shapes.
 struct Polygon {
   // Vertices are relative for the position. Must be in counter-clockwise
@@ -55,6 +63,8 @@ struct Body {
   3: optional double angle = 0.0,
   4: optional list<Shape> shapes,
   5: optional shared.Color color,
+  6: optional ShapeType shapeType = SHAPE_TYPE.UNDEFINED,
+  7: optional double diameter,
 }
 
 // Convex polygon with absolutely positions vecrticies.

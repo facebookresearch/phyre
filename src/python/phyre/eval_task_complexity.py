@@ -117,10 +117,10 @@ def _eval_single_task(task, action_tier_name, start, num_attempts):
     statuses = collections.defaultdict(int)
     stable_solutions, unstable_solutions = [], []
     for action in actions:
-        status, _ = action_simulator.simulate_single(0,
-                                                     action,
-                                                     need_images=False,
-                                                     stable=True)
+        status = action_simulator.simulate_action(0,
+                                                  action,
+                                                  need_images=False,
+                                                  stable=True).status
         statuses[status] += 1
         if status == STABLY_SOLVED:
             stable_solutions.append(action.tolist())

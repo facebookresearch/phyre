@@ -9,7 +9,7 @@ __pycache__
 # Excluded paths
 build
 cmake_build
-src/python/Phyre.egg-info/
+src/python/phyre.egg-info/
 
 # Saved solutions
 data/solutions
