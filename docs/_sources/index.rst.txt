@@ -13,7 +13,7 @@ PHYRE Documentation
    simulator
    evaluator
    cache
-   observations
+   visualization
 
 
 Indices and tables
