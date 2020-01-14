@@ -69,6 +69,19 @@ class ActionSimulatorTest(unittest.TestCase):
                                              [0.5, 0.5, 0.1]).status,
             SimulationStatus.NOT_SOLVED)
 
+    def test_simulate_single(self):
+        action_simulator = phyre.action_simulator.ActionSimulator(
+            self._tasks, phyre.action_mappers.SingleBallActionMapper())
+        action = [0.5, 0.5, 0.1]
+        simulation = action_simulator.simulate_action(self._task_id,
+                                                      action,
+                                                      need_images=True)
+        status, images = action_simulator.simulate_single(self._task_id,
+                                                          action,
+                                                          need_images=True)
+        self.assertEqual(status, simulation.status)
+        np.testing.assert_equal(images, simulation.images)
+
     def test_single_ball_tier_discrete(self):
         action_simulator = phyre.action_simulator.ActionSimulator(
             self._tasks, phyre.action_mappers.SingleBallActionMapper())

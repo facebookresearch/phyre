@@ -235,7 +235,7 @@ class ActionSimulator():
                                           need_featurized_objects=False,
                                           stride=stride,
                                           stable=stable)
-        return simulation.simulation_status, simulation.images
+        return simulation.status, simulation.images
 
     def simulate_action(self,
                         task_index: int,
