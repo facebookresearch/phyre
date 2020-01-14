@@ -209,6 +209,14 @@ and rel is less than MAX_RELATION.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="phyre.ActionSimulator.initial_featurized_objects">
+<em class="property">property </em><code class="sig-name descname">initial_featurized_objects</code><a class="headerlink" href="#phyre.ActionSimulator.initial_featurized_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inital scene objects featurized for each task before agent input.</p>
+<p>List (length tasks) of FeaturizedObjects containing float arrays of size
+(number scene objects, OBJECT_FEATURE_SIZE).</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="phyre.ActionSimulator.initial_scenes">
 <em class="property">property </em><code class="sig-name descname">initial_scenes</code><a class="headerlink" href="#phyre.ActionSimulator.initial_scenes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents intial scene for each task before agent input.</p>
@@ -222,9 +230,52 @@ and rel is less than MAX_RELATION.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="phyre.ActionSimulator.simulate_action">
+<code class="sig-name descname">simulate_action</code><span class="sig-paren">(</span><em class="sig-param">task_index: int, action: Union[Sequence[float], numpy.ndarray], *, need_images: bool = True, need_featurized_objects: bool = False, stride: int = 60, stable: bool = False</em><span class="sig-paren">)</span> &#x2192; phyre.simulation.Simulation<a class="headerlink" href="#phyre.ActionSimulator.simulate_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs simluation for the action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_index</strong> – index of the task.</p></li>
+<li><p><strong>action</strong> – numpy array or list of self.action_space_dim floats in
+[0, 1].</p></li>
+<li><p><strong>need_images</strong> – whether simulation images are needed.</p></li>
+<li><p><strong>need_featurized_objects</strong> – whether simulation featurized_objects are needed.</p></li>
+<li><p><strong>stride</strong> – int, defines the striding for the simulation images
+array. Higher striding will result in less images and less
+compute. Note, that this parameter doesn’t affect simulation
+FPS. Ignored if need_images is False.</p></li>
+<li><p><strong>stable</strong> – if True, will simulate a few actions in the neigborhood
+of the actions and return STABLY_SOLVED status iff all
+neigbour actions are either SOLVED or INVALID. Otherwise
+UNSTABLY_SOLVED is returned. SOLVED is never returned if
+stable is set.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt>phyre.simulation.Simulation object containing the result of</dt><dd><p>the simulation.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>SimulationStatus, images, and featurized_objects are easily</dt><dd><p>accesible with simulation.simulation_status, simulation.images,
+and simulation.featurized_objects.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="phyre.ActionSimulator.simulate_single">
 <code class="sig-name descname">simulate_single</code><span class="sig-paren">(</span><em class="sig-param">task_index: int, action: Union[Sequence[float], numpy.ndarray], need_images: bool = True, stride: int = 60, stable: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[phyre.action_simulator.SimulationStatus, Optional[numpy.ndarray]]<a class="headerlink" href="#phyre.ActionSimulator.simulate_single" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs simluation for the action.</p>
+<dd><p>Deprecated in version 0.2.0 in favor of simulate_action.
+Runs simluation for the action.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -295,6 +346,103 @@ stable is set.</p></li>
 <code class="sig-name descname">is_stably_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#phyre.SimulationStatus.is_stably_solved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the action is stable solution for the task.</p>
 <p>This only applies if the simulation was called with <cite>stable</cite> flag.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phyre.Simulation">
+<em class="property">class </em><code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">Simulation</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">status=None</em>, <em class="sig-param">images: Optional[numpy.ndarray] = None</em>, <em class="sig-param">featurized_objects: Optional[numpy.ndarray] = None</em><span class="sig-paren">)</span><a class="headerlink" href="#phyre.Simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for the result of an ActionSimulator simulation.</p>
+<p>Featurized objects and images are returned in the same order, such that
+simulation.images[i] is the pixel representation of
+simulation.featurized_objects[i].</p>
+<p>If self.status is INVALID_INPUT self.images,
+and self.featurized_objects are both None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images</strong> – Initial pixel representation of intermeidate obervations.</p></li>
+<li><p><strong>featurized_objects</strong> – Object representation of intermediate observations.
+FeaturizedObjects containing information about object features and state.</p></li>
+<li><p><strong>status</strong> – SimulationStatus of simulation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="phyre.FeaturizedObjects">
+<em class="property">class </em><code class="sig-prename descclassname">phyre.</code><code class="sig-name descname">FeaturizedObjects</code><span class="sig-paren">(</span><em class="sig-param">featurized_objects: numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#phyre.FeaturizedObjects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Featurization of objects in a series of scene, such as from a simulation.
+Returned by either ActionSimulator.intial_featurized_objects, or
+ActionSimulator.simulate_action if <cite>need_featurized_objects=True</cite>.
+<em>Note</em>, for object order, user input objects (if any) are always
+last.
+:ivar features: Featurs of objects of observations for a set (or one) timesteps.</p>
+<blockquote>
+<div><p>TxNx14 np.array where T is the number of timestes, N is the number
+of objects in the scene and 14 is the feature vector size.
+The features are by index:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>0: x in pixels of center of mass divided by SCENE_WIDTH</p></li>
+<li><p>1: y in pixels of center of mass divided by SCENE_HEIGHT</p></li>
+<li><p>2: angle of the object between 0 and 2pi divided by 2pi</p></li>
+<li><p>3: diameter in pixels of object divided by SCENE_WIDTH</p></li>
+<li><dl class="simple">
+<dt>4-8: One hot encoding of the object shape, according to order:</dt><dd><p>ball, bar, jar, standing sticks</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>8-14: One hot encoding of object color, according to order:</dt><dd><p>red, green, blue, purple, gray, black</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapes</strong> – List(str) of length number of objects of the
+shape types of the objects in order. Values are members of scene_if.ShapeType</p></li>
+<li><p><strong>shapes_one_hot</strong> – np.array of size (T, N, 4) corresponding to one hot
+encoding of shapes. Features 4-8
+shape types of the objects in order. Values are members of scene_if.ShapeType</p></li>
+<li><p><strong>colors</strong> – List(str) of length number of objects of the colors of the
+objects in order. Values are members of shared_if.Colors</p></li>
+<li><p><strong>shapes_one_hot</strong> – np.array of size (T, N, 6) corresponding to one hot
+encoding of colors. Features 8-14</p></li>
+<li><p><strong>diameters</strong> – np.ndarray of dtype=float of shape(num objects, ) containing
+the object diameter in pixels divided by SCENE_WIDTH in order</p></li>
+<li><p><strong>states</strong> – <p>np.array of size (T, N, 3) where T is the number of timesteps,
+N is the number of objects and the remaining 3 features are:</p>
+<blockquote>
+<div><ul>
+<li><p>0: x in pixels of center of mass divided by SCENE_WIDTH</p></li>
+<li><p>1: y in pixels of center of mass divided by SCENE_HEIGHT</p></li>
+<li><p>2: angle of the object in [0, 2pi]  divided by 2pi</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>num_user_inputs</strong> – (int) Number of user input objects in the simulation</p></li>
+<li><p><a class="reference internal" href="#phyre.FeaturizedObjects.num_objects" title="phyre.FeaturizedObjects.num_objects"><strong>num_objects</strong></a> – (int) Number of objects in the simulation_states</p></li>
+<li><p><strong>num_scene_obejcts</strong> – (int) Number of scene objects in the simulation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="phyre.FeaturizedObjects.num_objects">
+<em class="property">property </em><code class="sig-name descname">num_objects</code><a class="headerlink" href="#phyre.FeaturizedObjects.num_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of objects in the scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phyre.FeaturizedObjects.num_scene_objects">
+<em class="property">property </em><code class="sig-name descname">num_scene_objects</code><a class="headerlink" href="#phyre.FeaturizedObjects.num_scene_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of scene objects in the scene.</p>
 </dd></dl>
 
 </dd></dl>
