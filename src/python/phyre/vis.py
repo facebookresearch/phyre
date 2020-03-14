@@ -98,7 +98,7 @@ def save_observation_series_to_gif(batched_observation_series,
         images_for_step = np.concatenate(images_for_step, axis=1)
         images_per_step.append(images_for_step)
 
-    imageio.mimwrite(fpath, images_per_step)
+    imageio.mimwrite(fpath, images_per_step, format="gif")
 
 
 def compose_gifs_compact(input_fpathes, output_fpath):
