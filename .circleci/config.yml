@@ -9,34 +9,28 @@ jobs:
       # Create conda env with all deps.
       - restore_cache:
           keys:
-            - v2-conda-{{ checksum "env.yml" }}
+            - v3-conda-{{ checksum "env.yml" }}
       - run:
          command: |
           if [[ ! -d "/opt/conda/envs/phyre/" ]]; then
             conda env create -f env.yml
           fi
       - save_cache:
-          key: v2-conda-{{ checksum "env.yml" }}
+          key: v3-conda-{{ checksum "env.yml" }}
           paths: /opt/conda/envs/phyre/
-
-      # Restore node cache.
-      - restore_cache:
-          keys:
-            - v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}
 
       # Install phyre.
       - run:
          command: |
            apt-get update
-           apt-get install build-essential --yes
+           # Due to ABI incompability of the conda's boost and circle ci image,
+           # use boost from the image.
+           apt-get install build-essential libboost-all-dev --yes
            conda init bash
            . ~/.bashrc
            conda activate phyre
+           conda uninstall boost boost-cpp --yes
            pip install -e src/python
-      # Save node package cache.
-      - save_cache:
-          key: v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}
-          paths: src/viz/node_modules/
 
       # Run tests.
       - run:
