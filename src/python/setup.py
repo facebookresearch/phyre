@@ -70,8 +70,8 @@ setuptools.setup(name='phyre',
                  },
                  packages=['phyre', 'phyre.creator', 'phyre.viz_server'],
                  install_requires=[
-                     'nose', 'numpy', 'tornado', 'thrift', 'imageio', 'scipy',
-                     'joblib'
+                     'nose', 'numpy', 'tornado', 'thrift==0.11.0', 'imageio',
+                     'scipy', 'joblib'
                  ],
                  cmdclass={'build_ext': build_ext},
                  classifiers=[
