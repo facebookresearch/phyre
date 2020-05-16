@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Sequence, Tuple
 import math
 
 from phyre.creator import constants
@@ -105,6 +105,23 @@ class TaskCreator(object):
         if color is not None:
             body.set_color(color)
         body.set(**set_kwargs)
+        return body
+
+    def add_convex_polygon(self,
+                           vertices: Sequence[Tuple[float, float]],
+                           dynamic: bool = True):
+        # Make sure the center mass is at zero. That makes rendering more precise.
+        (center_x, center_y), _ = shapes_lib.compute_polygon_centroid(vertices)
+        vertices = [(x - center_x, y - center_y) for x, y in vertices]
+        shape = shapes_lib.vertices_to_polygon(vertices)
+        diameter = shapes_lib.compute_shape_diameter(shape)
+        body = Body([shape],
+                    dynamic,
+                    object_type=None,
+                    diameter=diameter,
+                    phantom_vertices=None)
+        self.scene.bodies.append(body._thrift_body)
+        self.body_list.append(body)
         return body
 
     def add_default_box(self, scale, dynamic=True):

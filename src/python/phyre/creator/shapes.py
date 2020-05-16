@@ -19,8 +19,11 @@ Each shape is defined by a subclass of ShapeBuilder. To build a shape call
 Function get_builders returns a maping for builder names to builders is should
 be used by clients instead of direct introspection.
 """
+from typing import Sequence, Tuple
 import abc
+import itertools
 import math
+
 import numpy as np
 
 from phyre.creator import constants
@@ -134,6 +137,49 @@ def vertices_to_polygon(vertices):
     shape = scene_if.Shape(polygon=scene_if.Polygon(vertices=poly_vertices))
     assert is_valid_convex_polygon(poly_vertices)
     return shape
+
+
+def compute_shape_diameter(shape: scene_if.Shape) -> float:
+
+    def distance(pair):
+        p1, p2 = pair
+        return ((p1.x - p2.x)**2 + (p1.y - p2.y)**2)**0.5
+
+    if shape.polygon:
+        return max(
+            map(distance, itertools.combinations(shape.polygon.vertices, 2)))
+    else:
+        return shape.circle.radius
+
+
+def compute_polygon_centroid(vertices: Sequence[Tuple[float, float]]
+                            ) -> Tuple[Tuple[float, float], float]:
+    """Compute center of mass and mass of a convex polygon."""
+
+    def _merge(points, masses):
+        mass = sum(masses)
+        x = sum(p[0] * m / mass for p, m in zip(points, masses))
+        y = sum(p[1] * m / mass for p, m in zip(points, masses))
+        return (x, y), mass
+
+    def _triangle_centroid(points):
+        x = sum(p[0] for p in points) / 3
+        y = sum(p[1] for p in points) / 3
+        l = lambda p1, p2: math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+        a, b, c = map(l, points, points[1:] + points)
+        p = (a + b + c) / 2
+        mass = math.sqrt(p * (p - a) * (p - b) * (p - c))
+        return (x, y), mass
+
+    centroid = [0., 0.]
+    mass = 0.
+    for i in range(2, len(vertices)):
+        triangle_centroid, triangle_mass = _triangle_centroid(
+            [vertices[0], vertices[i - 1], vertices[i]])
+        centroid, mass = _merge([centroid, triangle_centroid],
+                                [mass, triangle_mass])
+
+    return centroid, mass
 
 
 def is_valid_convex_polygon(points):

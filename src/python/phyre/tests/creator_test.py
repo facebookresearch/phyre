@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import random
 import unittest
 
-import phyre.creator.shapes
 import phyre.creator.creator
 import phyre.creator.constants
+import phyre.creator.shapes
 
 
 class TaskCreatorTestCase(unittest.TestCase):
@@ -62,6 +63,42 @@ class TaskCreatorTestCase(unittest.TestCase):
         self.assertEqual(
             sorted(phyre.creator.constants.ROLE_TO_COLOR_ID.values()),
             sorted(range(phyre.creator.constants.NUM_COLORS)))
+
+    def test_add_polygon(self):
+        vertices = [(0., 0.), (1., 0.), (2., 2.), (0., 1.)]
+        C = phyre.creator.creator.TaskCreator()
+        C.add_convex_polygon(vertices, dynamic=True)
+
+
+class ShapesTest(unittest.TestCase):
+
+    def test_polygon_diameter(self):
+        vertices = [(0., 0.), (1., 0.), (2., 2.), (0., 1.)]
+        shape = phyre.creator.shapes.vertices_to_polygon(vertices)
+        diameter = phyre.creator.shapes.compute_shape_diameter(shape)
+        self.assertAlmostEqual(diameter, (2**2 + 2**2)**0.5)
+
+    def test_rectange_centroid(self):
+        N = 4
+        vertices = []
+        for i in range(N):
+            angle = math.pi * 2 * i / N
+            vertices.append([math.cos(angle), math.sin(angle)])
+        print(vertices)
+        centroid, _ = phyre.creator.shapes.compute_polygon_centroid(vertices)
+        self.assertAlmostEqual(centroid[0], 0.)
+        self.assertAlmostEqual(centroid[1], 0.)
+
+    def test_polygon_centroid(self):
+        N = 24
+        vertices = []
+        for i in range(N):
+            angle = math.pi * 2 * i / N
+            vertices.append([math.cos(angle), math.sin(angle)])
+        print(vertices)
+        centroid, _ = phyre.creator.shapes.compute_polygon_centroid(vertices)
+        self.assertAlmostEqual(centroid[0], 0.)
+        self.assertAlmostEqual(centroid[1], 0.)
 
 
 if __name__ == '__main__':
