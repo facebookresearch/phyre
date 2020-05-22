@@ -152,15 +152,17 @@ def compute_shape_diameter(shape: scene_if.Shape) -> float:
         return shape.circle.radius
 
 
-def compute_polygon_centroid(vertices: Sequence[Tuple[float, float]]
-                            ) -> Tuple[Tuple[float, float], float]:
-    """Compute center of mass and mass of a convex polygon."""
+def _merge_centroids(points, masses):
+    mass = sum(masses)
+    x = sum(p[0] * m / mass for p, m in zip(points, masses))
+    y = sum(p[1] * m / mass for p, m in zip(points, masses))
+    return (x, y), mass
 
-    def _merge(points, masses):
-        mass = sum(masses)
-        x = sum(p[0] * m / mass for p, m in zip(points, masses))
-        y = sum(p[1] * m / mass for p, m in zip(points, masses))
-        return (x, y), mass
+
+def compute_polygon_centroid(
+    vertices: Sequence[Tuple[float,
+                             float]]) -> Tuple[Tuple[float, float], float]:
+    """Compute center of mass and mass of a convex polygon."""
 
     def _triangle_centroid(points):
         x = sum(p[0] for p in points) / 3
@@ -176,10 +178,18 @@ def compute_polygon_centroid(vertices: Sequence[Tuple[float, float]]
     for i in range(2, len(vertices)):
         triangle_centroid, triangle_mass = _triangle_centroid(
             [vertices[0], vertices[i - 1], vertices[i]])
-        centroid, mass = _merge([centroid, triangle_centroid],
-                                [mass, triangle_mass])
+        centroid, mass = _merge_centroids([centroid, triangle_centroid],
+                                          [mass, triangle_mass])
 
     return centroid, mass
+
+
+def compute_union_of_polygons_centroid(
+    polygons: Sequence[Sequence[Tuple[float, float]]]
+) -> Tuple[Tuple[float, float], float]:
+    """Compute center of mass and mass of a convex polygon."""
+    points, masses = zip(*map(compute_polygon_centroid, polygons))
+    return _merge_centroids(points, masses)
 
 
 def is_valid_convex_polygon(points):

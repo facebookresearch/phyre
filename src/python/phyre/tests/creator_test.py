@@ -69,6 +69,12 @@ class TaskCreatorTestCase(unittest.TestCase):
         C = phyre.creator.creator.TaskCreator()
         C.add_convex_polygon(vertices, dynamic=True)
 
+    def test_add_multipolygon(self):
+        vertices1 = [(0., 0.), (1., 0.), (2., 2.), (0., 1.)]
+        vertices2 = [(0., 0.), (5., 0.), (5., 2.), (0., 1.)]
+        C = phyre.creator.creator.TaskCreator()
+        C.add_multipolygons([vertices1, vertices2], dynamic=True)
+
 
 class ShapesTest(unittest.TestCase):
 

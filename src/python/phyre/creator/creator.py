@@ -124,6 +124,27 @@ class TaskCreator(object):
         self.body_list.append(body)
         return body
 
+    def add_multipolygons(self,
+                          polygons: Sequence[Sequence[Tuple[float, float]]],
+                          dynamic: bool = True):
+        """Adds a union of convex polygons."""
+        # Make sure the center mass is at zero. That makes rendering more precise.
+        (center_x, center_y), _ = shapes_lib.compute_polygon_centroid(polygons)
+        shapes = []
+        for vertices in polygons:
+            vertices = [(x - center_x, y - center_y) for x, y in vertices]
+            shapes.append(shapes_lib.vertices_to_polygon(vertices))
+        # TODO(akhti): fix diameter calculation.
+        diameter = shapes_lib.compute_shape_diameter(shapes[0])
+        body = Body(shapes,
+                    dynamic,
+                    object_type=None,
+                    diameter=diameter,
+                    phantom_vertices=None)
+        self.scene.bodies.append(body._thrift_body)
+        self.body_list.append(body)
+        return body
+
     def add_default_box(self, scale, dynamic=True):
         return self._add_body_from_builder(shapes_lib.Box,
                                            'box',
