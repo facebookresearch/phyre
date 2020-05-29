@@ -117,9 +117,13 @@ class TaskCreator(object):
         diameter = shapes_lib.compute_shape_diameter(shape)
         body = Body([shape],
                     dynamic,
-                    object_type=None,
+                    object_type='poly',
                     diameter=diameter,
                     phantom_vertices=None)
+
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
+
         self.scene.bodies.append(body._thrift_body)
         self.body_list.append(body)
         return body
@@ -129,7 +133,7 @@ class TaskCreator(object):
                           dynamic: bool = True):
         """Adds a union of convex polygons."""
         # Make sure the center mass is at zero. That makes rendering more precise.
-        (center_x, center_y), _ = shapes_lib.compute_polygon_centroid(polygons)
+        (center_x, center_y), _ = shapes_lib.compute_union_of_polygons_centroid(polygons)
         shapes = []
         for vertices in polygons:
             vertices = [(x - center_x, y - center_y) for x, y in vertices]
@@ -138,9 +142,13 @@ class TaskCreator(object):
         diameter = shapes_lib.compute_shape_diameter(shapes[0])
         body = Body(shapes,
                     dynamic,
-                    object_type=None,
+                    object_type='compound',
                     diameter=diameter,
                     phantom_vertices=None)
+
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
+
         self.scene.bodies.append(body._thrift_body)
         self.body_list.append(body)
         return body
@@ -333,7 +341,7 @@ class Body(object):
                          if dynamic else scene_if.BodyType.STATIC)
 
         self.set_object_type(object_type)
-        if object_type is not None:
+        if object_type is not None and object_type != 'poly' and object_type != 'compound':
             obj_name = 'wall' if 'wall' in object_type else object_type
             shape_type = shapes_lib.get_builders()[obj_name].SHAPE_TYPE
             if shape_type:

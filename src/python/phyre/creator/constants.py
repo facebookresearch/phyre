@@ -60,6 +60,8 @@ OBJECT_TYPES = frozenset([
     'bar',
     'box',
     'jar',
+    'poly',
+    'compound',
     'standingsticks',
     'left-wall',
     'right-wall',
