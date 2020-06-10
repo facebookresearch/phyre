@@ -55,14 +55,18 @@ DYNAMIC_COLOR_IDS = {
     ROLE_TO_COLOR_ID['DYNAMIC_SUBJECT'],
 }
 
-OBJECT_TYPES = frozenset([
+# Standard objects that could be created by name and scale.
+FACTORY_OBJECT_TYPES = frozenset([
     'ball',
     'bar',
     'box',
     'jar',
+    'standingsticks',
+])
+
+ALL_OBJECT_TYPES = frozenset(list(FACTORY_OBJECT_TYPES) + [
     'poly',
     'compound',
-    'standingsticks',
     'left-wall',
     'right-wall',
     'top-wall',

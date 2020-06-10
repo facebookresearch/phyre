@@ -35,10 +35,7 @@ class TaskCreatorTestCase(unittest.TestCase):
                          phyre.creator.constants.STATIC_COLOR_IDS)
             for color_id in color_ids:
                 color = phyre.creator.constants.color_to_name(color_id)
-                for object_type in phyre.creator.constants.OBJECT_TYPES:
-                    if 'wall' in object_type:
-                        continue
-
+                for object_type in phyre.creator.constants.FACTORY_OBJECT_TYPES:
                     # Create task with single object.
                     scale = max(0.02, random.random())
                     C = phyre.creator.creator.TaskCreator()
@@ -57,7 +54,7 @@ class TaskCreatorTestCase(unittest.TestCase):
 
     def test_object_types_reachable(self):
         for name in phyre.creator.shapes.get_builders():
-            self.assertIn(name, phyre.creator.constants.OBJECT_TYPES)
+            self.assertIn(name, phyre.creator.constants.FACTORY_OBJECT_TYPES)
 
     def test_color_consistency(self):
         self.assertEqual(
