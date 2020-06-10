@@ -87,6 +87,8 @@ class SolutionTier(enum.IntEnum):
     # Vaguely classified.
     SINGLE_OBJECT = enum.auto()
     GENERAL = enum.auto()
+    # From Tools Challenge.
+    VIRTUAL_TOOLS = enum.auto()
 
 
 NUM_COLORS: int = len(ROLE_TO_COLOR_ID)

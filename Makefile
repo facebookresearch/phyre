@@ -36,6 +36,10 @@ generate_tasks: | compile
 	rm -rf data/generated_tasks/tasks.pickle
 	cd src/python && python -m phyre.generate_tasks $(MKFILE_DIR)/data/task_scripts/main $(MKFILE_DIR)/data/generated_tasks --save-single-pickle --with-eval-stats
 
+generate_tasks_vt: | compile
+	rm -rf data/generated_tasks/tasks.pickle
+	cd src/python && python -m phyre.generate_tasks $(MKFILE_DIR)/data/task_scripts/main $(MKFILE_DIR)/data/generated_tasks --save-single-pickle --with-eval-stats --with-virtual-tools
+
 generate_test_tasks: | compile
 	rm -rf src/simulator/tests/test_data/task_validation/task*bin
 	cd src/python && python -m phyre.generate_tasks $(MKFILE_DIR)/data/task_scripts/tests/task_validation ../simulator/tests/test_data/task_validation
@@ -61,7 +65,7 @@ develop: | compile gen_egg $(VIZ_TARGET)
 
 react_deps:
 	cd src/viz && npm ci
-	
+
 $(THRIFT_JS_TARGET):
 	wget https://raw.githubusercontent.com/apache/thrift/823474ec89355f72d3f0720ae5dacc2036d41c03/lib/js/src/thrift.js -O $(THRIFT_JS_TARGET)
 

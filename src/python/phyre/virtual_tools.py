@@ -15,12 +15,16 @@
 
 https://arxiv.org/abs/1907.09620
 """
+import collections
+import json
+import pathlib
 
 import pymunk as pm
 import numpy as np
 
 import phyre.creator as creator_lib
 from phyre.creator import constants
+import phyre.settings
 
 VT_SCALE = 600.
 PHYRE_SCALE = constants.SCENE_WIDTH
@@ -183,10 +187,10 @@ def translate_to_phyre(d):
 
             elif o['type'] == 'Container':
                 bid, bbid = add_container(pgw,
-                                         o['points'],
-                                         o['width'],
-                                         dynamic,
-                                         goal_container=gcond['goal'] == nm)
+                                          o['points'],
+                                          o['width'],
+                                          dynamic,
+                                          goal_container=gcond['goal'] == nm)
 
             elif o['type'] == 'Compound':
                 polys = o['polys']
@@ -226,3 +230,32 @@ def translate_to_phyre(d):
     else:
         raise Exception("Invalid goal type for PHYRE given: ", gcond['type'])
     return pgw
+
+
+def convert_all_tasks(task_prefix="01"):
+    whitelistes_tasks = (
+        "Basic",
+        "Bridge",
+        "Catapult",
+        "Falling_A",
+        "Gap",
+        "Launch_A",
+        "Launch_B",
+        "Prevention_A",
+        "Prevention_B",
+        "SeeSaw",
+        "Table_A",
+        "Table_B",
+        "Unbox",
+    )
+    tasks = collections.OrderedDict()
+    for i, name in enumerate(whitelistes_tasks):
+        json_path = phyre.settings.VIRTUAL_TOOLS_DIR / "Original" / f"{name}.json"
+        with json_path.open() as stream:
+            description = json.load(stream)
+        task_creator = translate_to_phyre(description["world"])
+        task = task_creator.task
+        task.taskId = f"{task_prefix}{i:03d}:000"
+        task.tier = constants.SolutionTier.VIRTUAL_TOOLS.name
+        tasks[task.taskId] = task
+    return tasks

@@ -209,11 +209,16 @@ class ServiceHandler():
             task = self.task_cache[task_id]
         else:
             # Try to load the task instance directly.
-            _, _, module = loader.load_task_script(template_id)
-            task = module.build_task.get_specific_task(task_id)
-            solution_path = util.get_solution_path(task_id)
-            if os.path.exists(solution_path):
-                task.solutions = [util.load_user_input(solution_path)]
+            try:
+                _, _, module = loader.load_task_script(template_id)
+            except RuntimeError as e:
+                logging.warning("Failed to load module: %s", e)
+                task = self.task_cache[task_id]
+            else:
+                task = module.build_task.get_specific_task(task_id)
+                solution_path = util.get_solution_path(task_id)
+                if os.path.exists(solution_path):
+                    task.solutions = [util.load_user_input(solution_path)]
 
         meta_task = task_if.TaskWithMeta(task=task)
 

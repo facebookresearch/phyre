@@ -33,15 +33,25 @@ def _save_task(task_id, thrift_task, target_folder):
     return task_id
 
 
-def main(src_folder, target_folder, save_single_pickle, with_eval_stats):
+def load_virtial_tools_tasks():
+    import phyre.virtual_tools
+    return phyre.virtual_tools.convert_all_tasks()
+
+
+def main(src_folder, target_folder, save_single_pickle, with_eval_stats,
+         with_virtual_tools):
     if not os.path.exists(target_folder):
         os.makedirs(target_folder)
+    load_virtial_tools_tasks()
     if with_eval_stats:
         eval_stats = phyre.eval_task_complexity.load_all_eval_stats()
     else:
         eval_stats = None
     tasks = phyre.loader.load_tasks_from_folder(src_folder,
                                                 eval_stats=eval_stats)
+
+    if with_virtual_tools:
+        tasks.update(load_virtial_tools_tasks())
     if save_single_pickle:
         path = os.path.join(target_folder, phyre.settings.TASK_PICKLE_NAME)
         task_collection = task_if.TaskCollection(
@@ -71,4 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--with-eval-stats',
                         action='store_true',
                         help='Use eval stats when possible')
+    parser.add_argument('--with-virtual-tools',
+                        action='store_true',
+                        help='Convert all Virtual Tools tasks')
     main(**vars(parser.parse_args()))
