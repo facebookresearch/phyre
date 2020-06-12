@@ -120,7 +120,8 @@ class TaskCreator(object):
                     object_type='poly',
                     diameter=diameter,
                     phantom_vertices=None)
-        body.set_center(center_x, center_y)
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
 
         self.scene.bodies.append(body._thrift_body)
         self.body_list.append(body)
@@ -144,7 +145,9 @@ class TaskCreator(object):
                     object_type='compound',
                     diameter=diameter,
                     phantom_vertices=None)
-        body.set_center(center_x, center_y)
+
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
 
         self.scene.bodies.append(body._thrift_body)
         self.body_list.append(body)
