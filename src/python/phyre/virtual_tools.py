@@ -123,6 +123,7 @@ def add_container(pgw, points, width, dynamic, goal_container=False):
     ## Convert to set of multipolygons for PHYRE
     ptlist = points
     r = width / 2
+    #print(ptlist)
     polylist = segs2poly(ptlist, r)
 
     ## Since PHYRE does not allow "inside" relations, need to add an extra bar to the bottom
@@ -153,6 +154,31 @@ def convert_phyre_tools_vertices(verts_list):
         all_verts.append(new_verts)
     return all_verts
 
+def add_box(pgw, bbox, dynamic):
+    ## Add box given by bounding box info
+    verts = [[bbox[0], bbox[1]], [bbox[0], bbox[-1]], [bbox[2], bbox[-1]], [bbox[2], bbox[1]]]
+    verts.reverse()
+    bid = pgw.add_convex_polygon(convert_phyre_tools_vertices(verts), dynamic)
+    return bid
+
+def flip_left_right(coordinates, maxX):
+    ## sloppy not-quite-recursion for now
+    if type(coordinates[0]) != list and type(coordinates[0]) != tuple:
+        if type(coordinates) == tuple:
+            return tuple([maxX - coordinates[0], coordinates[1]])
+        else:
+            return [maxX - coordinates[0], coordinates[1]]
+    else:
+        if type(coordinates[0][0]) != list:
+            all_coords = []
+            for coords in coordinates:
+                all_coords.append(flip_left_right(coords))
+            return all_coords
+        else:
+            all_coords = []
+            for coords in coordinates:
+                all_coords.append(flip_left_right(coords))
+            return all_coords
 
 def translate_to_phyre(d):
 
