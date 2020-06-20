@@ -23,8 +23,11 @@ import phyre.settings
 import phyre.util
 
 
-def _eval_single_task(task_id, action_tier_name, attempts):
-    tasks = phyre.loader.load_tasks_from_folder(task_id_list=[task_id]).values()
+def _eval_single_task(task_id, action_tier_name, attempts, use_compiled):
+    if use_compiled:
+        tasks = [phyre.loader.load_compiled_task_dict()[task_id]]
+    else:
+        tasks = phyre.loader.load_tasks_from_folder(task_id_list=[task_id]).values()
     action_simulator = phyre.action_simulator.ActionSimulator(
         tasks, action_tier_name)
     real_attempts = 0
@@ -38,8 +41,10 @@ def _eval_single_task(task_id, action_tier_name, attempts):
     return (task_id, None, real_attempts)
 
 
-def get_task_dict(task_prefix):
-    if ':' in task_prefix or len(task_prefix) == 5:
+def get_task_dict(task_prefix, use_compiled):
+    if use_compiled:
+        task_dict = phyre.loader.load_compiled_task_dict()
+    elif ':' in task_prefix or len(task_prefix) == 5:
         template_id, _, module = phyre.loader.load_task_script(
             task_prefix.split(':')[0])
         task_dict = {
@@ -54,12 +59,13 @@ def get_task_dict(task_prefix):
 
 
 def main(action_tier_name, task_prefix, max_attempts, num_workers,
-         save_as_canonical_solution):
-    task_dict = get_task_dict(task_prefix)
+         save_as_canonical_solution, use_compiled):
+    task_dict = get_task_dict(task_prefix, use_compiled)
     logging.info('Found %d tasks matching %s', len(task_dict), task_prefix)
     _worker = functools.partial(_eval_single_task,
                                 action_tier_name=action_tier_name,
-                                attempts=max_attempts)
+                                attempts=max_attempts,
+                                use_compiled=use_compiled)
     pool = multiprocessing.Pool(num_workers if num_workers > 0 else None)
     total_solved = 0
     action_log = []
@@ -100,6 +106,9 @@ if __name__ == '__main__':
     parser.add_argument('--action-tier-name',
                         required=True,
                         choices=tuple(phyre.ACTION_TIERS))
+    parser.add_argument('--use-compiled',
+                        action='store_true',
+                        help='If set, will use pre-compiled tasks')
     parser.add_argument('--task-prefix', required=True)
     parser.add_argument('--max-attempts', type=int, default=4000)
     parser.add_argument('--save-as-canonical-solution', action='store_true')
