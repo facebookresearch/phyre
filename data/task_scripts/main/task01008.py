@@ -5,7 +5,7 @@ import phyre.virtual_tools as vt
 
 @creator_lib.define_task_template(
     seed=range(1000),
-    version="2",
+    version="1",
     search_params=dict(
         max_search_tasks=500,
         required_flags=['BALL:GOOD_STABLE'],
