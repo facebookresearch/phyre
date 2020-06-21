@@ -37,15 +37,16 @@ def build_task(C, seed):
   slopeL = [20, 100]
   slopeW = [10, 50]
 
+  flip_lr = rng.uniform(0, 1) < 0.5
 
   tableDims = [rng.uniform(tableWidth[0], tableWidth[1]), rng.uniform(tableHeight[0], tableHeight[1])]
   ballRad = rng.uniform(ballSize[0], ballSize[1])
 
   sW = rng.uniform(slopeW[0], slopeW[1])
   sL = rng.uniform(slopeL[0], slopeL[1])
-  slopeVerts = [[0,0], [0, sL], [sW, tableDims[1]], [sW, 0]]
+  slopeVerts = [[0,tableDims[1]], [0, sL+tableDims[1]], [sW, tableDims[1]]]
   slopeVerts.reverse()
-  
+
   ballPos = rng.uniform(ballRad+5+sW, tableDims[0] - ballRad - 5)
   coverL = rng.uniform(ballPos - ballRad*3, ballPos-ballRad)
   coverR = rng.uniform(ballPos+ballRad, ballPos+ballRad*3)
@@ -54,8 +55,12 @@ def build_task(C, seed):
   goalDims = [rng.uniform(ballRad*2 + 5, vt.VT_SCALE - tableDims[0] - 30), rng.uniform(goalHeight[0], min([goalHeight[1], tableDims[1]-10]))]
   goalXPos = rng.uniform(tableDims[0] + 10, (vt.VT_SCALE - goalDims[0] - 10))
 
-  table = vt.add_box(C, [0, 0, tableDims[0], tableDims[1]], False)
-  cover = vt.add_box(C, [coverL,coverY, coverR, coverY+15], False)
+  if flip_lr:
+    slopeVerts = vt.flip_left_right(slopeVerts)
+    ballPos = vt.flip_left_right(ballPos)
+
+  table = vt.add_box(C, [0, 0, tableDims[0], tableDims[1]], False, flip_lr=flip_lr)
+  cover = vt.add_box(C, [coverL,coverY, coverR, coverY+15], False, flip_lr=flip_lr)
 
   slope = C.add_convex_polygon(vt.convert_phyre_tools_vertices(slopeVerts), False)
   ball = C.add('dynamic ball', ballRad*2./vt.VT_SCALE, center_x=ballPos*C.scene.width/vt.VT_SCALE, bottom=tableDims[1]*C.scene.height/vt.VT_SCALE)
@@ -65,7 +70,7 @@ def build_task(C, seed):
     [goalXPos + goalDims[0], 5],
     [goalXPos + goalDims[0], goalDims[1]]
   ]
-  container_id, bbid = vt.add_container(C, goalVerts, 10, False, True)
+  container_id, bbid = vt.add_container(C, goalVerts, 10, False, True, flip_lr=flip_lr)
   C.update_task(body1=ball,
                 body2=container_id,
                 relationships=[C.SpatialRelationship.TOUCHING])

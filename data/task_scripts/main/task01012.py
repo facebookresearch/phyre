@@ -40,6 +40,7 @@ def build_task(C, seed):
   lidWidthExtra = [10, 50]
   lidThick = [8, 20] 
 
+  flip_lr = rng.uniform(0, 1) < 0.5
   ## Make the slope
   sL = rng.uniform(slopeLeft[0], slopeLeft[1])
   sR = rng.uniform(slopeRight[0], slopeRight[1])
@@ -49,8 +50,8 @@ def build_task(C, seed):
   ## Make the goal
   goalH = rng.uniform(goalHeightMin, sR)
   goalW = rng.uniform(goalWidth[0], goalWidth[1])
-  goalL = vt.VT_SCALE - goalW + 5
-  goalR = vt.VT_SCALE - 5
+  goalL = sW
+  goalR = sW + goalW
   goalVerts = [[goalL, goalH], [goalL, 5], [goalR, 5], [goalR, goalH]]
 
   ## Find the ball position
@@ -64,10 +65,16 @@ def build_task(C, seed):
   ## Make the world getting into the container
   slopeVerts.reverse()
 
+
+  if flip_lr:
+    slopeVerts = vt.flip_left_right(slopeVerts)
+    bpos = vt.flip_left_right(bpos)
+
+
   slope = C.add_convex_polygon(vt.convert_phyre_tools_vertices(slopeVerts), False)
-  container, _ = vt.add_container(C, goalVerts, 10, False, True)
+  container, _ = vt.add_container(C, goalVerts, 10, False, True, flip_lr=flip_lr)
   ball = C.add('dynamic ball', 30./vt.VT_SCALE, center_x=bpos[0]*C.scene.width/vt.VT_SCALE, center_y=bpos[1]*C.scene.height/vt.VT_SCALE)
-  lid = vt.add_box(C, lidBbox, True)
+  lid = vt.add_box(C, lidBbox, True, flip_lr=flip_lr)
   C.update_task(body1=ball,
                 body2=container,
                 relationships=[C.SpatialRelationship.TOUCHING])

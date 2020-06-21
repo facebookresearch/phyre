@@ -35,11 +35,12 @@ def build_task(C, seed):
   slopeWidth = [200, 300]
   ballXPos = [50, 150]
   ballYPos = [15, 50]
-  gapWidth = [50, 200]
-  supportX = [5, 30]
-  supportY = [-5, 50]
+  gapWidth = [60, 200]
+  supportX = [5, 25]
+  supportY = [-5, 80]
   lidThick = [15, 40] 
 
+  flip_lr = rng.uniform(0, 1) < 0.5
   ## Make the slope
   sL = rng.uniform(slopeLeft[0], slopeLeft[1])
   sR = rng.uniform(slopeRight[0], slopeRight[1])
@@ -62,17 +63,21 @@ def build_task(C, seed):
   ## Find the ball position
   bX = rng.uniform(ballXPos[0], ballXPos[1])
   bY = sL*(sW-bX)/sW + sR
-  bpos = [bX, bY + np.min([rng.uniform(ballYPos[0], ballYPos[1]), vt.VT_SCALE - 15])]
+  bpos = [bX, bY + rng.uniform(ballYPos[0], np.min([ballYPos[1], vt.VT_SCALE - bY - 15]))]
 
 
   ## Make the world getting into the container
   slopeVerts.reverse()
 
+  if flip_lr:
+    slopeVerts = vt.flip_left_right(slopeVerts)
+    bpos = vt.flip_left_right(bpos)
+
   slope = C.add_convex_polygon(vt.convert_phyre_tools_vertices(slopeVerts), False)
-  container, _ = vt.add_container(C, goalSegs, 10, False, True)
+  container, _ = vt.add_container(C, goalSegs, 10, False, True, flip_lr=flip_lr)
   ball = C.add('dynamic ball', 30./vt.VT_SCALE, center_x=bpos[0]*C.scene.width/vt.VT_SCALE, center_y=bpos[1]*C.scene.height/vt.VT_SCALE)
-  strutBox = vt.add_box(C, strutSupportBox, False)
-  support = vt.add_box(C, supportBox, True)
+  strutBox = vt.add_box(C, strutSupportBox, False, flip_lr=flip_lr)
+  support = vt.add_box(C, supportBox, True, flip_lr=flip_lr)
 
   C.update_task(body1=ball,
                 body2=container,

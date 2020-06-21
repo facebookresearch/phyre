@@ -40,7 +40,8 @@ def build_task(C, seed):
   platformLeft = [375, 400] 
   platformRight =  [475, 500] 
   platformHeight = [300, 350]
-  blockSize = [25, 35] 
+  blockSize = [30, 40] 
+  pWidth = 15 ## Platform Vertical Width
 
   gW = rng.uniform(goalWidth[0],goalWidth[1])
   gH = rng.uniform(goalHeight[0], goalHeight[1])
@@ -53,19 +54,20 @@ def build_task(C, seed):
   pR = rng.uniform(platformRight[0],platformRight[1])
   pH = rng.uniform(platformHeight[0],platformHeight[1])
   bS = rng.uniform(blockSize[0],blockSize[1])
-
+  jitter = rng.uniform(0, pR - pL - bS)
   ## Set params
   bLeft = (pR - pL)/2 - bS/2 ## Left bound of block
-  pWidth = 15 ## Platform Vertical Width
+
 
   ## Make the world
   slopeVerts = [[0, sH], [0, sH + sL], [sW, sH + sR], [sW, sH]]
   slopeVerts.reverse()
   slope = C.add_convex_polygon(vt.convert_phyre_tools_vertices(slopeVerts), False)
   container, _ = vt.add_container(C, [[vt.VT_SCALE - 5 - gW, gH], [vt.VT_SCALE - 5 - gW, 0.0], [vt.VT_SCALE - 5, 0.0], [vt.VT_SCALE - 5, gH]], 10, False, True)
-  block = vt.add_box(C, [pL, pH + pWidth, bS + pL, pH + pWidth + bS], True)
+  #block = vt.add_box(C, [pL, pH + pWidth, bS + pL, pH + pWidth + bS], True)
+  block = C.add('dynamic ball', bS/vt.VT_SCALE, center_x=(pL+jitter)*C.scene.width/vt.VT_SCALE, bottom=pH*C.scene.width/vt.VT_SCALE)
   platform = vt.add_box(C, [pL, pH, pR, pH + pWidth], False)
-  ball = C.add('dynamic ball', bR*2/vt.VT_SCALE, center_x=(bR + 5), center_y=(sL+sH+bR))
+  ball = C.add('dynamic ball', bR*2/vt.VT_SCALE, center_x=(bR + 5)*C.scene.width/vt.VT_SCALE, center_y=(sL+sH+bR)*C.scene.height/vt.VT_SCALE)
 
   C.update_task(body1=ball,
                 body2=container,

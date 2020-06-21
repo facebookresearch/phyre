@@ -38,6 +38,7 @@ def build_task(C, seed):
   strutHeightMin = 40 
   strutWid = [15, 40]
 
+  flip_lr = rng.uniform(0, 1) < 0.5
   ## Make the slope
   sL = rng.uniform(slopeLeft[0], slopeLeft[1])
   sR = rng.uniform(slopeRight[0], slopeRight[1])
@@ -65,13 +66,19 @@ def build_task(C, seed):
   strutL = rng.uniform(sW, (sW + goalL) / 2 -strutW)
   strutVerts = [[strutL, 0], [strutL, strutH], [strutL+strutW, strutH], [strutL+strutW, 0]]
 
+  if flip_lr:
+    slopeVerts = vt.flip_left_right(slopeVerts)
+    bpos = vt.flip_left_right(bpos)
+    tabVerts = vt.flip_left_right(tabVerts)
+    strutVerts = vt.flip_left_right(strutVerts)
+
   ## Make the world getting into the container
   slopeVerts.reverse()
   tabVerts.reverse()
   strutVerts.reverse()
 
   slope = C.add_convex_polygon(vt.convert_phyre_tools_vertices(slopeVerts), False)
-  container, _ = vt.add_container(C, goalVerts, 10, False, True)
+  container, _ = vt.add_container(C, goalVerts, 10, False, True, flip_lr=flip_lr)
   ball = C.add('dynamic ball', 30.0/vt.VT_SCALE, center_x=bpos[0]*C.scene.width/vt.VT_SCALE, center_y=bpos[1]*C.scene.height/vt.VT_SCALE)
   table = C.add_convex_polygon(vt.convert_phyre_tools_vertices(tabVerts),True)
   strut = C.add_convex_polygon(vt.convert_phyre_tools_vertices(strutVerts),True)

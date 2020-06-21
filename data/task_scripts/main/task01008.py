@@ -22,6 +22,7 @@ def build_task(C, seed):
   maxTabWid = 150 
   tableX = [10, 400]
 
+  flip_lr = rng.uniform(0, 1) < 0.5
   bSize = rng.uniform(blockSize[0], blockSize[1])
   tHeight = rng.uniform(tableHeight[0], tableHeight[1])
 
@@ -45,8 +46,8 @@ def build_task(C, seed):
   tWidth = rng.uniform(baseWidth - bSize, maxTabWid)
   tPos = rng.uniform(tableX[0], tableX[1])
 
-  floor = vt.add_box(C, [0, 0, vt.VT_SCALE, 10], False)
-  table = vt.add_box(C, [tPos, 10, tPos+tWidth, tHeight], False)
+  floor = vt.add_box(C, [0, 0, vt.VT_SCALE, 10], False, flip_lr=flip_lr)
+  table = vt.add_box(C, [tPos, 10, tPos+tWidth, tHeight], False, flip_lr=flip_lr)
   
   baseH = tHeight
   for i in range(0, len(stackSizes)):
@@ -60,7 +61,7 @@ def build_task(C, seed):
       else:
         goal = False
 
-      blockID = vt.add_box(C, blockExt, True)
+      blockID = vt.add_box(C, blockExt, True, flip_lr=flip_lr)
       if goal:
         goalBlock = blockID
       baseX += bSize

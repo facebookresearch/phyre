@@ -54,14 +54,15 @@ def build_task(C, seed):
   stP = rng.uniform(strutPlace[0], strutPlace[1])
   stP = min([stP, cW/2])
 
+  flip_lr = rng.uniform(0, 1) < 0.5
   ## Then fit together
   cataCent = vt.VT_SCALE - gW - sp - cW/2
   cataLeft = cataCent - cW / 2
 
   ## Make the world
-  strut = vt.add_box(C, [cataCent - sW/2 + stP, 0, cataCent + sW/2 + stP, sH], False)
-  cradle = vt.add_box(C, [cataLeft, 0, cataLeft+10, sH], False )
-  container, _ = vt.add_container(C, [[vt.VT_SCALE-gW, gH], [vt.VT_SCALE-gW, 5], [vt.VT_SCALE-5, 5], [vt.VT_SCALE-5, gH]], 10, False, True)
+  strut = vt.add_box(C, [cataCent - sW/2 + stP, 0, cataCent + sW/2 + stP, sH], False, flip_lr=flip_lr)
+  cradle = vt.add_box(C, [cataLeft, 0, cataLeft+10, sH], False, flip_lr=flip_lr)
+  container, _ = vt.add_container(C, [[vt.VT_SCALE-gW, gH], [vt.VT_SCALE-gW, 5], [vt.VT_SCALE-5, 5], [vt.VT_SCALE-5, gH]], 10, False, True, flip_lr=flip_lr)
   polys = [
     [[cataLeft, sH], [cataLeft, sH+cT], [cataLeft+cT, sH+cT], [cataLeft+cT, sH]],
     [[cataLeft, sH+cT], [cataLeft, sH+cH], [cataLeft+cT, sH+cH], [cataLeft+cT, sH+cT]],
@@ -69,13 +70,19 @@ def build_task(C, seed):
   ]
   for p in polys:
     p.reverse()
-
+  
+  if flip_lr:
+    p = vt.flip_left_right(p)
+    center_x = vt.flip_left_right(cataLeft+cT+bR+30)
+  else:
+    center_x = cataLeft+cT+bR+30
   converted_polylist = [
     vt.convert_phyre_tools_vertices(poly) for poly in polys
   ]
   catapult = C.add_multipolygons(polygons=converted_polylist,
                             dynamic=True)
-  ball = C.add('dynamic ball', bR*2./vt.VT_SCALE, center_x=(cataLeft+cT+bR+30)*C.scene.width/vt.VT_SCALE, center_y=(sH+cT+bR)*C.scene.width/vt.VT_SCALE)
+  
+  ball = C.add('dynamic ball', bR*2./vt.VT_SCALE, center_x=center_x*C.scene.width/vt.VT_SCALE, center_y=(sH+cT+bR)*C.scene.width/vt.VT_SCALE)
   C.update_task(body1=ball,
                 body2=container,
                 relationships=[C.SpatialRelationship.TOUCHING])
