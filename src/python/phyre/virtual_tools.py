@@ -161,7 +161,6 @@ def add_box(pgw, bbox, dynamic, flip_lr=False):
     if flip_lr:
         verts = flip_left_right(verts)
     verts.reverse()
-    print(verts)
     bid = pgw.add_convex_polygon(convert_phyre_tools_vertices(verts), dynamic)
     return bid
 
