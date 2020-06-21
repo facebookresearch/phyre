@@ -118,14 +118,14 @@ def segs2poly(seglist, r):
     return polylist
 
 
-def add_container(pgw, points, width, dynamic, goal_container=False):
+def add_container(pgw, points, width, dynamic, goal_container=False, flip_lr=False):
     ## Containers are described by sets of segments in Virtual Tools
     ## Convert to set of multipolygons for PHYRE
     ptlist = points
     r = width / 2
-    #print(ptlist)
     polylist = segs2poly(ptlist, r)
-
+    if flip_lr:
+        polylist = flip_left_right(polylist)
     ## Since PHYRE does not allow "inside" relations, need to add an extra bar to the bottom
     ## of the container to mimic this behavior
     if goal_container:
@@ -154,27 +154,40 @@ def convert_phyre_tools_vertices(verts_list):
         all_verts.append(new_verts)
     return all_verts
 
-def add_box(pgw, bbox, dynamic):
+def add_box(pgw, bbox, dynamic, flip_lr=False):
     ## Add box given by bounding box info
     verts = [[bbox[0], bbox[1]], [bbox[0], bbox[-1]], [bbox[2], bbox[-1]], [bbox[2], bbox[1]]]
+
+    if flip_lr:
+        verts = flip_left_right(verts)
     verts.reverse()
+    print(verts)
     bid = pgw.add_convex_polygon(convert_phyre_tools_vertices(verts), dynamic)
     return bid
 
-def flip_left_right(coordinates, maxX):
-    ## sloppy not-quite-recursion for now
+def flip_left_right(coordinates, maxX=VT_SCALE):
+    ##Flip scene around x
+
+    ##Flip one number
+    if type(coordinates) != list and type(coordinates) != tuple:
+        return maxX - coordinates #flip single float/integer
+
+    ##Flip coordinates (x, y)
     if type(coordinates[0]) != list and type(coordinates[0]) != tuple:
         if type(coordinates) == tuple:
             return tuple([maxX - coordinates[0], coordinates[1]])
         else:
             return [maxX - coordinates[0], coordinates[1]]
     else:
+        #Flip list of coordinates (x,y)
         if type(coordinates[0][0]) != list:
             all_coords = []
             for coords in coordinates:
                 all_coords.append(flip_left_right(coords))
+            all_coords.reverse()
             return all_coords
         else:
+            #Flip list of list of coordinates (x,y)
             all_coords = []
             for coords in coordinates:
                 all_coords.append(flip_left_right(coords))
