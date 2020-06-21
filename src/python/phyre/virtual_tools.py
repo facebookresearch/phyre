@@ -118,7 +118,12 @@ def segs2poly(seglist, r):
     return polylist
 
 
-def add_container(pgw, points, width, dynamic, goal_container=False, flip_lr=False):
+def add_container(pgw,
+                  points,
+                  width,
+                  dynamic,
+                  goal_container=False,
+                  flip_lr=False):
     ## Containers are described by sets of segments in Virtual Tools
     ## Convert to set of multipolygons for PHYRE
     ptlist = points
@@ -154,9 +159,11 @@ def convert_phyre_tools_vertices(verts_list):
         all_verts.append(new_verts)
     return all_verts
 
+
 def add_box(pgw, bbox, dynamic, flip_lr=False):
     ## Add box given by bounding box info
-    verts = [[bbox[0], bbox[1]], [bbox[0], bbox[-1]], [bbox[2], bbox[-1]], [bbox[2], bbox[1]]]
+    verts = [[bbox[0], bbox[1]], [bbox[0], bbox[-1]], [bbox[2], bbox[-1]],
+             [bbox[2], bbox[1]]]
 
     if flip_lr:
         verts = flip_left_right(verts)
@@ -164,12 +171,13 @@ def add_box(pgw, bbox, dynamic, flip_lr=False):
     bid = pgw.add_convex_polygon(convert_phyre_tools_vertices(verts), dynamic)
     return bid
 
+
 def flip_left_right(coordinates, maxX=VT_SCALE):
     ##Flip scene around x
 
     ##Flip one number
     if type(coordinates) != list and type(coordinates) != tuple:
-        return maxX - coordinates #flip single float/integer
+        return maxX - coordinates  #flip single float/integer
 
     ##Flip coordinates (x, y)
     if type(coordinates[0]) != list and type(coordinates[0]) != tuple:
@@ -191,6 +199,7 @@ def flip_left_right(coordinates, maxX=VT_SCALE):
             for coords in coordinates:
                 all_coords.append(flip_left_right(coords))
             return all_coords
+
 
 def translate_to_phyre(d):
 
