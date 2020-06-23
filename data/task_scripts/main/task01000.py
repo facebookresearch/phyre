@@ -19,9 +19,9 @@ import phyre.virtual_tools as vt
 
 @creator_lib.define_task_template(
     seed=range(1000),
-    version="1",
+    version="2",
     search_params=dict(
-        max_search_tasks=500,
+        max_search_tasks=300,
         required_flags=['BALL:GOOD_STABLE'],
         excluded_flags=['BALL:TRIVIAL'],
     ),

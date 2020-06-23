@@ -7,7 +7,7 @@ import phyre.virtual_tools as vt
     seed=range(1000),
     version="1",
     search_params=dict(
-        max_search_tasks=500,
+        max_search_tasks=300,
         required_flags=['BALL:GOOD_STABLE'],
         excluded_flags=['BALL:TRIVIAL'],
     ),
