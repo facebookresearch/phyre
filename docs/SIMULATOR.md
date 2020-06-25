@@ -12,7 +12,7 @@ Scene contains all objects that should be a part of simulation, i.e., it contain
 
 A simple way to see how the task object look like, is to load and print arbitrary task:
 
-```
+```python console
 >>> import phyre.loader
 >>> all_tasks = phyre.loader.load_compiled_task_dict()
 >>> all_tasks["00000:000"]
@@ -24,7 +24,7 @@ Task(taskId='00000:000', scene=Scene(bodies=[Body(position=Vector(x=128.0, y=-2.
 
 The low level interface lives in [simulator.py][https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/simulator.py] and [simulator_bidings.cc](https://github.com/facebookresearch/phyre/blob/master/src/simulator/simulator_bindings.cpp). The former is a thin wrapper over the latter. Below are the main function you may use.
 
-```
+```python
 simulate_scene(
     scene: scene_if.Scene,
     steps: int = DEFAULT_MAX_STEPS
@@ -33,7 +33,7 @@ simulate_scene(
 Runs a simulation on a given scene for a given number of steps and retuns a list of scenes. Note, this function tasks Scene rather than Task and therefore does not do any checks for solvability.
 
 
-```
+```python
 simulate_task(
     task: task_if.Task,
     steps: int = DEFAULT_MAX_STEPS,
@@ -43,14 +43,14 @@ simulate_task(
 Runs a simulation on the task and returns a `TaskSimulation` object. The `stride` parameter allows to reduce the output size by skipping some frames. By default `stride` is equal FPS (60), i.e., we return one scene per second.
 
 
-```
+```python
 scene_to_raster(scene: scene_if.Scene) -> np.ndarray
 ```
 
 Converts the scene to an integer array height x width containing color codes. The color codes are copied from the `color` attribute of `Body` objects in the `Scene`.
 
 
-```
+```python
 add_user_input_to_scene(
     scene: scene_if.Scene,
     user_input: scene_if.UserInput,

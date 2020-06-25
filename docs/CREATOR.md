@@ -26,7 +26,7 @@ Task script is a python that constructs a task or a series of similar tasks (tas
 
 Here is an example of a task scripts for task template `00000` (see [demo](https://player.phyre.ai/#/task/00000:000)).
 
-```(python)
+```python
 import numpy as np
 import phyre.creator as creator_lib
 
@@ -101,7 +101,7 @@ Note, the snippet above assumes that you build the phyre [source](https://github
 
 It is possible to import tasks created from Tools Challenge format into the phyre. Note that due to different settings for friction and gravity the solvability of tasks may change. The following an example of importing a JSON definition of level. 
 
-```
+```python
 import numpy as np
 import phyre.creator as creator_lib
 import phyre.virtual_tools
@@ -177,7 +177,7 @@ Once it is done, one can annotate a task script with `search_params` parameter t
 # Load arbitrary task
 
 Use the following code to a dictionary from task id to a task that contains tasks from all the tiers:
-```
+```python
 import phyre.loader
 all_tasks = phyre.loader.load_compiled_task_dict()
 ```
