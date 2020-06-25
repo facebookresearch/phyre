@@ -201,11 +201,12 @@ def flip_left_right(coordinates, maxX=VT_SCALE):
             return all_coords
 
 
-def translate_to_phyre(d):
+def translate_to_phyre(C, world_description):
+    d = world_description
+    pgw = C
 
     ## d is assumed to be a dictionary in Virtual Tools level format
     ## please
-    pgw = creator_lib.creator.TaskCreator()
     gcond = d['gcond']
     all_ids = {}
     for nm, o in d['objects'].items():
@@ -300,7 +301,8 @@ def convert_all_tasks(task_prefix="01"):
         json_path = phyre.settings.VIRTUAL_TOOLS_DIR / "Original" / f"{name}.json"
         with json_path.open() as stream:
             description = json.load(stream)
-        task_creator = translate_to_phyre(description["world"])
+        task_creator = translate_to_phyre(creator_lib.creator.TaskCreator(),
+                                          description["world"])
         task = task_creator.task
         task.taskId = f"{task_prefix}{i:03d}:000"
         task.tier = constants.SolutionTier.VIRTUAL_TOOLS.name

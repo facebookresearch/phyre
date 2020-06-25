@@ -17,13 +17,13 @@ import os
 import matplotlib.pyplot as plt
 
 import phyre
+import phyre.creator as creator_lib
 import phyre.settings
 import phyre.simulator
 import phyre.virtual_tools as vt_converter
 
 PHYRE_SCALE = vt_converter.PHYRE_SCALE
 VT_SCALE = vt_converter.VT_SCALE
-
 
 if __name__ == '__main__':
     import argparse
@@ -54,7 +54,8 @@ if __name__ == '__main__':
         with open(os.path.join(json_dir, tnm + '.json'), 'r') as f:
             btr = json.load(f)
 
-        pgw = vt_converter.translate_to_phyre(btr['world'])
+        pgw = vt_converter.translate_to_phyre(creator_lib.creator.TaskCreator(),
+                                              btr['world'])
         if tnm in actions.keys():
             pgw.add('dynamic ball',
                     scale=actions[tnm][-1] * 2 / VT_SCALE,
