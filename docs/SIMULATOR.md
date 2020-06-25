@@ -1,16 +1,16 @@
 # Simulation details
 
-This docs describes how we store and represent tasks and simulations and how one can go beyong `ActionSimulator` interface.
+This docs describes how we store and represent tasks and simulations and how one can go beyond `ActionSimulator` interface.
 
 ## Data structures
 
-Phyre uses [Box2d](https://box2d.org/) engine under the hood for all the simulations.
-To make it possible to access tasks and simulation results in C++, Python, and JavaScript, we use [Thrift](http://thrift.apache.org/) for cross-language representation of all data structuters. 
+Phyre uses the [Box2d](https://box2d.org/) engine under the hood for all the simulations.
+To make it possible to access tasks and simulation results in C++, Python, and JavaScript, we use [Thrift](http://thrift.apache.org/) for cross-language representation of all data structures. 
 
-The three most imporant structrures are Scene (defined in [scene.thrift](../src/if/scene.thrif)), Task and TaskSimulation (both are in [task.thrift](../src/if/task.thrif)).
-Scene contains all objects that should be a part of simulation, i.e., it contains both the bodies from task definiton and bodies added by user. Task contains a scene and the definition of the goal of task, i.e., a relation that should hold for the to be considered solved. Finally, TaskSimulation contains positions of all objects at every timestamp. It also contains information on whether the goal condition was satisfied at any point of time and whether the task is deemed solved.
+The three most important structures are Scene (defined in [scene.thrift](../src/if/scene.thrif)), Task and TaskSimulation (both are in [task.thrift](../src/if/task.thrif)).
+Scene contains all objects that should be a part of simulation, i.e., it contains both the bodies from task definition and bodies added by the user. Task contains a scene and the definition of the goal of task, i.e., a relation that should hold for the to be considered solved. Finally, TaskSimulation contains positions of all objects at every timestamp. It also contains information on whether the goal condition was satisfied at any point of time and whether the task is deemed solved.
 
-A simple way to see how the task object look like, is to load and print arbitraty task:
+A simple way to see how the task object look like, is to load and print arbitrary task:
 
 ```
 >>> import phyre.loader
@@ -40,14 +40,14 @@ simulate_task(
     stride: int = DEFAULT_STRIDE
 ) -> task_if.TaskSimulation
 ```
-Runs a simulation on task and returns TaskSimulation object. The `stride` parameters allows to reduce the output size by skipping some frames. By default `stride` is equal FPS (60), i.e., we return one scene per second.
+Runs a simulation on the task and returns a `TaskSimulation` object. The `stride` parameter allows to reduce the output size by skipping some frames. By default `stride` is equal FPS (60), i.e., we return one scene per second.
 
 
 ```
 scene_to_raster(scene: scene_if.Scene) -> np.ndarray
 ```
 
-Convert scene to a integer array height x width containing color codes. The color codes are copied from `color` attribute of `Body` objects in the `Scene`.
+Converts the scene to an integer array height x width containing color codes. The color codes are copied from the `color` attribute of `Body` objects in the `Scene`.
 
 
 ```
@@ -65,4 +65,4 @@ These functions are the core of the simulator inteface. `ActionSimulator.simulat
 
 ## Tinkering with the physics
 
-To make generalization in Phyre dataset feasible we use the parameters for all simulations and bodies. This includes [FPS](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/task_utils.h#L25), precision of [collision resolving](https://github.com/facebookresearch/phyre/blob/master/src/simulator/task_utils.h#L27-L28), [gravity](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L28), [density](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L29), [friction and restitution](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L30-L37) and [damping factors](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L38-L46). However, as everything is Thrift, it's easy to add required parameters per object or per task in Python, and use it in C++. The same goes the other way, i.e., if you want to get more data, e.g., speeds of the objects, you can add them to `TaskSimulation` in C++ and use in Python. Feel free to open an issue, if you need help with that.
+To make generalization in the Phyre dataset feasible we use the parameters for all simulations and bodies. This includes [FPS](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/task_utils.h#L25), precision of [collision resolving](https://github.com/facebookresearch/phyre/blob/master/src/simulator/task_utils.h#L27-L28), [gravity](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L28), [density](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L29), [friction and restitution](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L30-L37) and [damping factors](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/simulator/thrift_box2d_conversion.cpp#L38-L46). However, as everything is Thrift, it's easy to add required parameters per object or per task in Python, and use it in C++. The same goes the other way, i.e., if you want to get more data, e.g., speeds of the objects, you can add them to `TaskSimulation` in C++ and use in Python. Feel free to open an issue, if you need help with that.

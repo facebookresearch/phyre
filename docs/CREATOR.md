@@ -10,15 +10,15 @@ This doc goes addresses the following questions:
 
 ## Task internals
 
-On conceptual level, a tasks is a triple `(scene, goal, meta)`. Scene is the collections of all the objects present in the task. Goal defines a condition that must be satisfied for the task to be considered solved. It contains a pair of objects on the scene and relation, e.g., `touching` or `inside`.
-Meta information includes unique task id and a tier the task belongs. The former looks like `XXXXX:YYY`; we use the same first part to group tasks created by single task script.
+On a conceptual level, a task is a triple `(scene, goal, meta)`. Scene is the collections of all the objects present in the task. Goal defines a condition that must be satisfied for the task to be considered solved. It contains a pair of objects on the scene and relation, e.g., `touching` or `inside`.
+Meta information includes unique task id and a tier the task belongs. The former looks like `XXXXX:YYY`; we use the same first part to group tasks created by a single task script.
 The tier is simply a string that we use to group the tasks, e.g., tier `BALL` tasks that could be solved with a single ball in the standard Phyre benchmark and tier `VIRTUAL_TOOLS` contains tasks imported from [The Tools Challenge](https://arxiv.org/abs/1907.09620).
 
 On physical level, a task is a struct of type [Task](../src/if/task.thrift#37).
 We use Thrift to all scenes, and goals, and everything so that we can use them from both C++ and Python.
 The struct counts all the information about the task, but it's cumbersome to construct this object manually, i.e., to define coordinates and shapes of all the bodies in a scene.
-Instead, we have a simple python interface that shields user from the thrift.
-Probably, the only reason to go to thrift is to check what kind of goals available.
+Instead, we have a simple python interface that shields users from the thrift.
+Probably, the only reason to go to thrift is to check what kind of goals are available.
 
 ## Task scripts
 
@@ -75,14 +75,14 @@ def build_task(C, ball1_x, ball2_x, ball1_r, ball2_r, height):
 ```
 
 The only defined function, `build_task`, defines how to build a task given a `TaskCreator` [object](https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/creator/creator.py#L23) and set of hyperparameters for this specific instance of the task.
-`creator_lib.define_task_template` will call `build_task` to create sum number of tasks from the cartesian of product of ranges for all the hyperparameters. By default, up `100` instances are created. To make tasks more diverse we select a random subset of parameters from the set rather than the first 100 elements.
+`creator_lib.define_task_template` will call `build_task` to create some number of tasks from the cartesian product of ranges for all the hyperparameters. By default, up `100` instances are created. To make tasks more diverse we select a random subset of parameters from the set rather than the first 100 elements.
 
 To a new object use `C.add`. It takes a string description of the object and the scale of the object. Description is 2 words: `(static|dynamic) <object type>`. Object type is one of ball, bar, jar, and standingsticks. These are the standard objects used in the main Phyre tiers.
-The are two ways to define a custom shape. Either by adding it to [shapes.py](https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/creator/shapes.py) or by specifying its shape directly as a convex polygon (`C.add_convex_polygon`) or a union of convex polygons (`C.add_multipolygons`). 
+There are two ways to define a custom shape. Either by adding it to [shapes.py](https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/creator/shapes.py) or by specifying its shape directly as a convex polygon (`C.add_convex_polygon`) or a union of convex polygons (`C.add_multipolygons`). 
 
 The function returns `Body` [object](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/python/phyre/creator/creator.py#L261). It could be used to move the body, e.g., `ball1.set_right(C.scene.width)` will push the object to the corner, or to query object position, e.g., `ball2.set_center_x(ball1.center_x)` will align the objects horizontally. Refer to the methods of the class for the full interface.
 
-After a scene is created we define the goal of the task using `C.update_task`. It takes a couple of bodies and a list relation that must be simaultenously satisfied to a task considered to be solved. You can find the full list [here](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/if/task.thrift#L25-L33).
+After a scene is created we define the goal of the task using `C.update_task`. It takes a couple of bodies and a list relation that must be simultaneously satisfied to a task considered to be solved. You can find the full list [here](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/if/task.thrift#L25-L33).
 
 Finally, we define a tier for the task. To avoid typos we use named constants for tiers as defined in [constants.py](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/python/phyre/creator/constants.py#L72-L83).
 
@@ -95,7 +95,7 @@ python -m phyre.server --mode dev --port 30303
 
 Open http://localhost:30303 to see all the tasks.
 
-Note, the snippet above assumes that you build the phyre [source](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md#installation-from-source) rather than from pip package.
+Note, the snippet above assumes that you build the phyre [source](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md#installation-from-source) rather than from this pip package.
 
 ### Importing tasks from Tools format
 
@@ -106,7 +106,7 @@ import numpy as np
 import phyre.creator as creator_lib
 import phyre.virtual_tools
 
-# Path a level definiton, such as https://github.com/k-r-allen/tool-games/blob/master/environment/Trials/Original/Basic.json.
+# Path to a definition of a level, such as https://github.com/k-r-allen/tool-games/blob/master/environment/Trials/Original/Basic.json.
 JSON_PATH = "..."
 
 
@@ -137,7 +137,7 @@ def build_task(C, noop):
 
 ## Solvability checking
 
-As a task script generates tasks hundreeds of different random sets hyperparameters, it is almost impossible to cherry-pick ones that result in solvable tasks. 
+As a task script generates hundreds of different random sets hyperparameters, it is almost impossible to cherry-pick ones that result in solvable tasks. 
 Phyre contains several tools to aid with task selection. 
 
 The simplest tool is task bruteforcer. It could be invoked like that:
@@ -162,7 +162,7 @@ The bruteforcer will load all task with id `000XX:YYY`, i.e., tasks in the `BALL
 ...
 ```
 
-This will give a quick estimate. But for automatic selection of the task one has to do more thourough eval using so called *eval stats*. Eval stats contain informarmation about solvability of a task in all 2 action tiers (ball, two balls, and ramp) for every task in a template. By default, eval stats are computed for `200` task instances, i.e., for 2 times more tasks that we normally. In doing so we can guarantee that there is at least `100` tasks that are actually solvable. Eval stats also contain the solutions for each task so that one can play them in the `viz`.
+This will give a quick estimate. But for automatic selection of the task one has to do more thorough eval using so called *eval stats*. Eval stats contain information about solvability of a task in all 2 action tiers (ball, two balls, and ramp) for every task in a template. By default, eval stats are computed for `200` task instances, i.e., for 2 times more tasks that we normally do. In doing so we can guarantee that there are at least `100` tasks that are actually solvable. Eval stats also contain the solutions for each task so that one can play them in the `viz`.
 
 Use the following command to compute eval stats:
 ```
@@ -176,4 +176,8 @@ Once it is done, one can annotate a task script with `search_params` parameter t
 
 # Load arbitrary task
 
-Use `phyre.loader`
+Use the following code to a dictionary from task id to a task that contains tasks from all the tiers:
+```
+import phyre.loader
+all_tasks = phyre.loader.load_compiled_task_dict()
+```
