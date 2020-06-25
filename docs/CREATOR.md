@@ -12,7 +12,7 @@ This doc goes addresses the following questions:
 
 On a conceptual level, a task is a triple `(scene, goal, meta)`. Scene is the collections of all the objects present in the task. Goal defines a condition that must be satisfied for the task to be considered solved. It contains a pair of objects on the scene and relation, e.g., `touching` or `inside`.
 Meta information includes unique task id and a tier the task belongs. The former looks like `XXXXX:YYY`; we use the same first part to group tasks created by a single task script.
-The tier is simply a string that we use to group the tasks, e.g., tier `BALL` tasks that could be solved with a single ball in the standard Phyre benchmark and tier `VIRTUAL_TOOLS` contains tasks imported from [The Tools Challenge](https://arxiv.org/abs/1907.09620).
+The tier is simply a string that we use to group the tasks, e.g., tier `BALL` tasks that could be solved with a single ball in the standard Phyre benchmark and tier `VIRTUAL_TOOLS` contains tasks imported from [The Tools Challenge](https://sites.google.com/view/virtualtoolsgame).
 
 On physical level, a task is a struct of type [Task](../src/if/task.thrift#37).
 We use Thrift to all scenes, and goals, and everything so that we can use them from both C++ and Python.
@@ -119,17 +119,6 @@ def build_task(C, noop):
     
     # Will convert the task.
     phyre.virtual_tools.translate_to_phyre(C, task_dict["world"]
-
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Kelsey, how this should be done?
-    # Should the function return dict name->body?
-    C.update_task(
-        body1=ball1,
-        body2=ball2,
-        relationships=[C.SpatialRelationship.TOUCHING])    
 
     # Define a tier for the task.
     C.set_meta(C.SolutionTier.VIRTUAL_TOOLS)
