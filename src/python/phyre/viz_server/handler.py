@@ -91,8 +91,9 @@ class ServiceHandler():
                 for key, task in self._task_cache.items()
                 if task.tier in PROD_TIERS
             }
-        path = str(settings.TASK_DIR / settings.TASK_PICKLE_NAME)
-        self._last_read_timestamp = os.path.getmtime(path)
+        self._last_read_timestamp = max(
+            os.path.getmtime(path)
+            for path in settings.TASK_DIR.glob("*.bin.lzma"))
 
     @property
     @_time_me
