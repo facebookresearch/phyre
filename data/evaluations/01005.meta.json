@@ -1,1 +1,1 @@
-{"evaluator_version": "8", "task_script_hash": "ad9c3a0c3754169376580a421d01aaeb", "task_script_version": "1", "creator_hash": "363bb27418ce45b24c9ca2756bb53f90", "simulate_kwargs": {"min_valid_attempts": 10000, "simulate_worker_size": 10000}}
+{"evaluator_version": "8", "task_script_hash": "9426d1732dec4519021945f066e7afc9", "task_script_version": "2", "creator_hash": "363bb27418ce45b24c9ca2756bb53f90", "simulate_kwargs": {"min_valid_attempts": 10000, "simulate_worker_size": 10000}}
