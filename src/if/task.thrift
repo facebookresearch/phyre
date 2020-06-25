@@ -53,8 +53,11 @@ struct TaskCollection {
 // Return object from task simulation. Some fields may be missing for
 // performance reaons depending on what type of simulation is requested.
 struct TaskSimulation {
+  // Whether the task was in solved states for 3 seconds.
   1: optional bool isSolution,
+  // State of the Scene at each timestamp.
   2: optional list<scene.Scene> sceneList,
+  // Whether the task was in solved state at this timestamp.
   3: optional list<bool> solvedStateList,
   // Number of steps simulation ran for. It matches sizes of the lists if
   // stride is 1.

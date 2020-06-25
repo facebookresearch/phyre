@@ -16,8 +16,11 @@ possible.
 
 ![phyre](imgs/phyre_tasks.gif)
 
-You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/) and jump straight into [jupyter notebook](examples/01_phyre_intro.ipynb).
+Phyre framework could be used for several task related to physical reasoning.
 
+  * As a benchmark: Phyre allows to evaluate different reasoning agents on a predefined set of tasks and complexity tiers. You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/).
+  * As a task building platform: Phyre contains a framework to create new levels with goals and objects from way richer set that one used in the standard tiers. This could be used to study specific types of generalization for reasoning agents, perfomance or forward modelling, or something else, e.g., enable [reasoning about physics in natural language](https://arxiv.org/abs/2005.00730). See [this doc](docs/CREATOR.md) for details.
+  * As an interface to a fast physical engine: Phyre uses [Box2d](https://box2d.org/) engine under the hood. In the benchmark we hide all details of the simulation. See [this doc](docs/SIMULATOR.md) for details on low level interface.
 
 # Getting started
 
