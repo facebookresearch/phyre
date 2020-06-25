@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A thin wrapper around c++ simulator bindings to handle Thrift objects."""
+from typing import List
 import copy
 import numpy as np
 from thrift import TSerialization
@@ -66,14 +67,17 @@ def build_user_input(points=None, rectangulars=None, balls=None):
     return user_input
 
 
-def simulate_scene(scene, steps=DEFAULT_MAX_STEPS):
+def simulate_scene(scene: scene_if.Scene,
+                   steps: int = DEFAULT_MAX_STEPS) -> List[scene_if.Scene]:
     serialized_scenes = simulator_bindings.simulate_scene(
         serialize(scene), steps)
     scenes = [deserialize(scene_if.Scene(), b) for b in serialized_scenes]
     return scenes
 
 
-def simulate_task(task, steps=DEFAULT_MAX_STEPS, stride=DEFAULT_STRIDE):
+def simulate_task(task: task_if.Task,
+                  steps: int = DEFAULT_MAX_STEPS,
+                  stride: int = DEFAULT_STRIDE) -> task_if.TaskSimulation:
     result = simulator_bindings.simulate_task(serialize(task), steps, stride)
     return deserialize(task_if.TaskSimulation(), result)
 
@@ -91,11 +95,11 @@ def check_for_occlusions(task, user_input, keep_space_around_bodies=True):
             task, points, rectangulars, balls, keep_space_around_bodies)
 
 
-def add_user_input_to_scene(scene,
-                            user_input,
-                            keep_space_around_bodies=True,
-                            allow_occlusions=False):
-    """Converts user input to objects in the scene.
+def add_user_input_to_scene(scene: scene_if.Scene,
+                            user_input: scene_if.UserInput,
+                            keep_space_around_bodies: bool = True,
+                            allow_occlusions: bool = False) -> scene_if.Scene:
+    """Adds user input objects to the scene.
 
     Args:
         scene: scene_if.Scene.
@@ -137,7 +141,7 @@ def simulate_task_with_input(task,
     return simulate_task(task, steps, stride)
 
 
-def scene_to_raster(scene):
+def scene_to_raster(scene: scene_if.Scene) -> np.ndarray:
     """Convert scene to a integer array height x width containing color codes.
     """
     pixels = simulator_bindings.render(serialize(scene))
@@ -254,8 +258,13 @@ def magic_ponies(task,
     images = packed_images.reshape((-1, height, width))
     packed_featurized_objects = np.array(packed_featurized_objects,
                                          dtype=np.float32)
-    packed_featurized_objects = packed_featurized_objects.reshape(
-        (-1, number_objects, OBJECT_FEATURE_SIZE))
+    if packed_featurized_objects.size == 0:
+        # Custom task without any known objects.
+        packed_featurized_objects = np.zeros(
+            (0, number_objects, OBJECT_FEATURE_SIZE))
+    else:
+        packed_featurized_objects = packed_featurized_objects.reshape(
+            (-1, number_objects, OBJECT_FEATURE_SIZE))
     packed_featurized_objects = phyre.simulation.finalize_featurized_objects(
         packed_featurized_objects)
     if with_times:
