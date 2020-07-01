@@ -111,6 +111,7 @@ class TaskCreator(object):
                            vertices: Sequence[Tuple[float, float]],
                            dynamic: bool = True):
         # Make sure the center mass is at zero. That makes rendering more precise.
+
         (center_x, center_y), _ = shapes_lib.compute_polygon_centroid(vertices)
         vertices = [(x - center_x, y - center_y) for x, y in vertices]
         shape = shapes_lib.vertices_to_polygon(vertices)

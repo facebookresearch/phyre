@@ -18,8 +18,6 @@ https://arxiv.org/abs/1907.09620
 import collections
 import json
 import pathlib
-
-import pymunk as pm
 import numpy as np
 
 import phyre.creator as creator_lib
@@ -36,29 +34,36 @@ def _isleft(spt, ept, testpt):
     cross = seg1[0] * seg2[1] - seg1[1] * seg2[0]
     return cross > 0
 
+def rotate(vec, angle):
+    """Rotate the vector by angle_radians radians."""
+    cos = np.cos(angle)
+    sin = np.sin(angle)
+    x = vec[0]*cos - vec[1]*sin
+    y = vec[0]*sin + vec[1]*cos
+    return np.array([x,y])
 
 def segs2poly(seglist, r):
-    vlist = [pm.Vec2d(v) for v in seglist]
+    vlist = [np.array(v) for v in seglist]
     # Start by figuring out the initial edge (ensure ccw winding)
     iseg = vlist[1] - vlist[0]
     ipt = vlist[0]
-    iang = iseg.angle
+    iang = np.arctan2(iseg[1], iseg[0])
     if iang <= (-np.pi / 4.) and iang >= (-np.pi * 3. / 4.):
         # Going downwards
-        prev1 = (ipt.x - r, ipt.y)
-        prev2 = (ipt.x + r, ipt.y)
+        prev1 = (ipt[0] - r, ipt[1])
+        prev2 = (ipt[0] + r, ipt[1])
     elif iang >= (np.pi / 4.) and iang <= (np.pi * 3. / 4.):
         # Going upwards
-        prev1 = (ipt.x + r, ipt.y)
-        prev2 = (ipt.x - r, ipt.y)
+        prev1 = (ipt[0] + r, ipt[1])
+        prev2 = (ipt[0] - r, ipt[1])
     elif iang >= (-np.pi / 4.) and iang <= (np.pi / 4.):
         # Going rightwards
-        prev1 = (ipt.x, ipt.y - r)
-        prev2 = (ipt.x, ipt.y + r)
+        prev1 = (ipt[0], ipt[1] - r)
+        prev2 = (ipt[0], ipt[1] + r)
     else:
         # Going leftwards
-        prev1 = (ipt.x, ipt.y + r)
-        prev2 = (ipt.x, ipt.y - r)
+        prev1 = (ipt[0], ipt[1] + r)
+        prev2 = (ipt[0], ipt[1] - r)
 
     polylist = []
     for i in range(1, len(vlist) - 1):
@@ -68,19 +73,20 @@ def segs2poly(seglist, r):
         sm = pim - pi
         sp = pip - pi
         # Get the angle of intersection between two lines
-        angm = sm.angle
-        angp = sp.angle
+        angm = np.arctan2(sm[1], sm[0])#.angle
+        angp = np.arctan2(sp[1], sp[0])#.angle
         angi = (angm - angp) % (2 * np.pi)
         # Find the midpoint of this angle and turn it back into a unit vector
         angn = (angp + (angi / 2.)) % (2 * np.pi)
         if angn < 0:
             angn += 2 * np.pi
-        unitn = pm.Vec2d.unit()
-        unitn.angle = angn
-        xdiff = r if unitn.x >= 0 else -r
-        ydiff = r if unitn.y >= 0 else -r
-        next3 = (pi.x + xdiff, pi.y + ydiff)
-        next4 = (pi.x - xdiff, pi.y - ydiff)
+        #unitn = np.array([1.0, 0.0])#pm.Vec2d.unit()
+        unitn = np.array([np.cos(angn), np.sin(angn)])
+        #unitn.angle = angn
+        xdiff = r if unitn[0] >= 0 else -r
+        ydiff = r if unitn[1] >= 0 else -r
+        next3 = (pi[0] + xdiff, pi[1] + ydiff)
+        next4 = (pi[0] - xdiff, pi[1] - ydiff)
         # Ensure appropriate winding -- next3 should be on the left of next4
         if _isleft(prev2, next3, next4):
             tmp = next4
@@ -95,23 +101,23 @@ def segs2poly(seglist, r):
     # Finish by figuring out the final edge
     fseg = vlist[-2] - vlist[-1]
     fpt = vlist[-1]
-    fang = fseg.angle
+    fang = np.arctan2(fseg[1], fseg[0])#.angle
     if fang <= (-np.pi / 4.) and fang >= (-np.pi * 3. / 4.):
         # Coming from downwards
-        next3 = (fpt.x - r, fpt.y)
-        next4 = (fpt.x + r, fpt.y)
+        next3 = (fpt[0] - r, fpt[1])
+        next4 = (fpt[0] + r, fpt[1])
     elif fang >= (np.pi / 4.) and fang <= (np.pi * 3. / 4.):
         # Coming from upwards
-        next3 = (fpt.x + r, fpt.y)
-        next4 = (fpt.x - r, fpt.y)
+        next3 = (fpt[0] + r, fpt[1])
+        next4 = (fpt[0] - r, fpt[1])
     elif fang >= (-np.pi / 4.) and fang <= (np.pi / 4.):
         # Coming from rightwards
-        next3 = (fpt.x, fpt.y - r)
-        next4 = (fpt.x, fpt.y + r)
+        next3 = (fpt[0], fpt[1] - r)
+        next4 = (fpt[0], fpt[1] + r)
     else:
         # Coming from leftwards
-        next3 = (fpt.x, fpt.y + r)
-        next4 = (fpt.x, fpt.y - r)
+        next3 = (fpt[0], fpt[1] + r)
+        next4 = (fpt[0], fpt[1] - r)
     curr_poly = [prev1, prev2, next3, next4]
     curr_poly.reverse()
     polylist.append(curr_poly)
@@ -133,10 +139,16 @@ def add_container(pgw,
         polylist = flip_left_right(polylist)
     ## Since PHYRE does not allow "inside" relations, need to add an extra bar to the bottom
     ## of the container to mimic this behavior
+    ## Assumes containers consist of 3 segments
     if goal_container:
-        extra_poly = []
-        for v in polylist[1]:
-            extra_poly.append((v[0], v[1] + width * 2))
+        vertices = polylist[1]
+        leftmost = min([v[0] for v in vertices])
+        bottom = min([v[1] for v in vertices])
+        rightmost = max([v[0] for v in vertices])
+        top = max([v[1] for v in vertices])
+
+        extra_poly = [[leftmost+width, bottom+width*2], [leftmost+width, top+width*2], [rightmost-width, top+width*2], [rightmost-width, bottom+width*2]]
+        extra_poly.reverse()
         bottom_bid = pgw.add_convex_polygon(
             convert_phyre_tools_vertices(extra_poly), False)
     else:
