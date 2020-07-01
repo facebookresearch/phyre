@@ -34,13 +34,15 @@ def _isleft(spt, ept, testpt):
     cross = seg1[0] * seg2[1] - seg1[1] * seg2[0]
     return cross > 0
 
+
 def rotate(vec, angle):
     """Rotate the vector by angle_radians radians."""
     cos = np.cos(angle)
     sin = np.sin(angle)
-    x = vec[0]*cos - vec[1]*sin
-    y = vec[0]*sin + vec[1]*cos
-    return np.array([x,y])
+    x = vec[0] * cos - vec[1] * sin
+    y = vec[0] * sin + vec[1] * cos
+    return np.array([x, y])
+
 
 def segs2poly(seglist, r):
     vlist = [np.array(v) for v in seglist]
@@ -73,8 +75,8 @@ def segs2poly(seglist, r):
         sm = pim - pi
         sp = pip - pi
         # Get the angle of intersection between two lines
-        angm = np.arctan2(sm[1], sm[0])#.angle
-        angp = np.arctan2(sp[1], sp[0])#.angle
+        angm = np.arctan2(sm[1], sm[0])  #.angle
+        angp = np.arctan2(sp[1], sp[0])  #.angle
         angi = (angm - angp) % (2 * np.pi)
         # Find the midpoint of this angle and turn it back into a unit vector
         angn = (angp + (angi / 2.)) % (2 * np.pi)
@@ -101,7 +103,7 @@ def segs2poly(seglist, r):
     # Finish by figuring out the final edge
     fseg = vlist[-2] - vlist[-1]
     fpt = vlist[-1]
-    fang = np.arctan2(fseg[1], fseg[0])#.angle
+    fang = np.arctan2(fseg[1], fseg[0])  #.angle
     if fang <= (-np.pi / 4.) and fang >= (-np.pi * 3. / 4.):
         # Coming from downwards
         next3 = (fpt[0] - r, fpt[1])
@@ -147,7 +149,10 @@ def add_container(pgw,
         rightmost = max([v[0] for v in vertices])
         top = max([v[1] for v in vertices])
 
-        extra_poly = [[leftmost+width, bottom+width*2], [leftmost+width, top+width*2], [rightmost-width, top+width*2], [rightmost-width, bottom+width*2]]
+        extra_poly = [[leftmost + width, bottom + width * 2],
+                      [leftmost + width, top + width * 2],
+                      [rightmost - width, top + width * 2],
+                      [rightmost - width, bottom + width * 2]]
         extra_poly.reverse()
         bottom_bid = pgw.add_convex_polygon(
             convert_phyre_tools_vertices(extra_poly), False)
