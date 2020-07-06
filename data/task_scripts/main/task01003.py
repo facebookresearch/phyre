@@ -21,10 +21,9 @@ import phyre.virtual_tools as vt
 @creator_lib.define_task_template(
     seed=range(1000),
     version="2",
-    search_params=dict(
-        required_flags=['BALL:GOOD_STABLE'],
-        excluded_flags=['BALL:TRIVIAL'],
-    ),
+    search_params=dict(required_flags=['BALL:GOOD_STABLE'],
+                       excluded_flags=['BALL:TRIVIAL'],
+                       diversify_tier='ball'),
 )
 def build_task(C, seed):
     rng = np.random.RandomState(seed=seed)

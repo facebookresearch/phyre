@@ -25,6 +25,7 @@ import phyre.virtual_tools as vt
         max_search_tasks=300,
         required_flags=['BALL:GOOD_STABLE'],
         excluded_flags=['BALL:TRIVIAL'],
+        diversify_tier='ball',
     ),
 )
 def build_task(C, seed):
