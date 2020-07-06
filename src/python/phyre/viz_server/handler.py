@@ -44,7 +44,7 @@ LAST_INPUT_PATH = '/tmp/phyre_last_user_input.txt'
 PROD_MODE = 'prod'
 DEV_MODE = 'dev'
 DEMO_MODE = 'demo'
-PROD_TIERS = ('BALL', 'TWO_BALLS', 'VIRTUAL_TOOLS')
+PROD_TIERS = ('BALL', 'TWO_BALLS')
 
 TIER_TO_CODE = {'ball': 'B', 'two_balls': '2B', 'ramp': 'R'}
 CODE_TO_TIER = {v: k for k, v in TIER_TO_CODE.items()}

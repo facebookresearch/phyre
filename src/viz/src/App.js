@@ -381,7 +381,6 @@ class WorldWithControls extends Component {
       const subcaption = this.state.task_id_prefix ? "" : {
         BALL: 'Tasks in this tier can be solved with a single ball.',
         TWO_BALLS: 'Tasks in this tier can be solved with two balls.',
-        VIRTUAL_TOOLS: 'Tasks in this tier can be solved with a single balls. This is an extension of the original dataset for cross-dataset generalization',
       }[tier]
       return <ThumbBlock
           key={tier}
