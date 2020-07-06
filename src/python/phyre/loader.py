@@ -145,13 +145,33 @@ def load_tasks_from_folder(task_folder: str = str(
     return tasks
 
 
-def load_compiled_task_dict() -> Dict[str, task_if.Task]:
+def task_id_to_pickle(task_id):
+    prefix = task_id[:2]
+    if prefix == "00":
+        return 'tasks.bin.lzma'
+    else:
+        return f'tasks{prefix}.bin.lzma'
+
+
+def load_compiled_task_dict(task_ids: Optional[Sequence[str]] = None
+                           ) -> Dict[str, task_if.Task]:
     """Helper function to load the default task dump."""
-    path = phyre.settings.TASK_DIR / phyre.settings.TASK_PICKLE_NAME
-    with lzma.open(path) as stream:
-        collection = phyre.simulator.deserialize(task_if.TaskCollection(),
-                                                 stream.read())
-    return {task.taskId: task for task in collection.tasks}
+    if task_ids is not None:
+        fnames = frozenset(map(task_id_to_pickle, task_ids))
+        paths = [phyre.settings.TASK_DIR / fname for fname in fnames]
+    else:
+        paths = phyre.settings.TASK_DIR.glob("*.bin.lzma")
+    data = {}
+    for path in paths:
+        with lzma.open(path) as stream:
+            collection = phyre.simulator.deserialize(task_if.TaskCollection(),
+                                                     stream.read())
+        data.update({task.taskId: task for task in collection.tasks})
+    if task_ids is not None:
+        missing = frozenset(task_ids).difference(data)
+        if missing:
+            raise RuntimeError('Unknown task ids: %s' % missing)
+    return data
 
 
 def load_compiled_template_dict() -> Dict[str, Dict[str, task_if.Task]]:
@@ -166,11 +186,8 @@ def load_compiled_template_dict() -> Dict[str, Dict[str, task_if.Task]]:
     return template_ids
 
 
-def load_compiled_task_list(task_ids: Sequence[str]) -> Sequence[task_if.Task]:
+def load_compiled_task_list(task_ids: Sequence[str],) -> Sequence[task_if.Task]:
     """Helper function to load a list of tasks from the default task dump."""
-    task_dict = load_compiled_task_dict()
-    missing = frozenset(task_ids).difference(task_dict)
-    if missing:
-        raise RuntimeError('Unknown task ids: %s' % missing)
+    task_dict = load_compiled_task_dict(task_ids)
     tasks = [task_dict[task_id] for task_id in task_ids]
     return tasks

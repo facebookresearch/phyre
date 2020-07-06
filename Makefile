@@ -33,7 +33,7 @@ xc: $(CMAKE_TARGET)
 	mkdir -p xc && cd xc && cmake -DCMAKE_BUILD_TYPE=Debug -GXcode .. -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=../src/python/phyre
 
 generate_tasks: | compile
-	rm -rf data/generated_tasks/tasks.pickle
+	rm -rf data/generated_tasks/*.bin.lzma
 	cd src/python && python -m phyre.generate_tasks $(MKFILE_DIR)/data/task_scripts/main $(MKFILE_DIR)/data/generated_tasks --save-single-pickle --with-eval-stats
 
 generate_test_tasks: | compile
@@ -61,7 +61,7 @@ develop: | compile gen_egg $(VIZ_TARGET)
 
 react_deps:
 	cd src/viz && npm ci
-	
+
 $(THRIFT_JS_TARGET):
 	wget https://raw.githubusercontent.com/apache/thrift/823474ec89355f72d3f0720ae5dacc2036d41c03/lib/js/src/thrift.js -O $(THRIFT_JS_TARGET)
 

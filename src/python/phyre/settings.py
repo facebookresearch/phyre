@@ -15,9 +15,9 @@
 import pathlib
 
 PHYRE_DIR = pathlib.Path(__file__).parent
-TASK_PICKLE_NAME = 'tasks.bin.lzma'
 DATA_DIR = PHYRE_DIR / 'data'
 TASK_DIR = DATA_DIR / 'generated_tasks'
+VIRTUAL_TOOLS_DIR = DATA_DIR / 'virtual_tools'
 TASK_EVAL_DIR = DATA_DIR / 'evaluations'
 TASK_SCRIPTS_DIR = DATA_DIR / 'task_scripts' / 'main'
 TASK_SOLUTION_POWER_DIR = DATA_DIR / 'solution_power'

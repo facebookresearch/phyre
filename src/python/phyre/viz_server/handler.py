@@ -44,7 +44,7 @@ LAST_INPUT_PATH = '/tmp/phyre_last_user_input.txt'
 PROD_MODE = 'prod'
 DEV_MODE = 'dev'
 DEMO_MODE = 'demo'
-PROD_TIERS = ('BALL', 'TWO_BALLS')
+PROD_TIERS = ('BALL', 'TWO_BALLS', 'VIRTUAL_TOOLS')
 
 TIER_TO_CODE = {'ball': 'B', 'two_balls': '2B', 'ramp': 'R'}
 CODE_TO_TIER = {v: k for k, v in TIER_TO_CODE.items()}
@@ -91,8 +91,9 @@ class ServiceHandler():
                 for key, task in self._task_cache.items()
                 if task.tier in PROD_TIERS
             }
-        path = str(settings.TASK_DIR / settings.TASK_PICKLE_NAME)
-        self._last_read_timestamp = os.path.getmtime(path)
+        self._last_read_timestamp = max(
+            os.path.getmtime(path)
+            for path in settings.TASK_DIR.glob("*.bin.lzma"))
 
     @property
     @_time_me
@@ -209,11 +210,16 @@ class ServiceHandler():
             task = self.task_cache[task_id]
         else:
             # Try to load the task instance directly.
-            _, _, module = loader.load_task_script(template_id)
-            task = module.build_task.get_specific_task(task_id)
-            solution_path = util.get_solution_path(task_id)
-            if os.path.exists(solution_path):
-                task.solutions = [util.load_user_input(solution_path)]
+            try:
+                _, _, module = loader.load_task_script(template_id)
+            except RuntimeError as e:
+                logging.warning("Failed to load module: %s", e)
+                task = self.task_cache[task_id]
+            else:
+                task = module.build_task.get_specific_task(task_id)
+                solution_path = util.get_solution_path(task_id)
+                if os.path.exists(solution_path):
+                    task.solutions = [util.load_user_input(solution_path)]
 
         meta_task = task_if.TaskWithMeta(task=task)
 

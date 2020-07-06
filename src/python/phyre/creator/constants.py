@@ -55,17 +55,24 @@ DYNAMIC_COLOR_IDS = {
     ROLE_TO_COLOR_ID['DYNAMIC_SUBJECT'],
 }
 
-OBJECT_TYPES = frozenset([
+# Standard objects that could be created by name and scale.
+FACTORY_OBJECT_TYPES = frozenset([
     'ball',
     'bar',
     'box',
     'jar',
     'standingsticks',
-    'left-wall',
-    'right-wall',
-    'top-wall',
-    'bottom-wall',
 ])
+
+ALL_OBJECT_TYPES = frozenset(
+    list(FACTORY_OBJECT_TYPES) + [
+        'poly',
+        'compound',
+        'left-wall',
+        'right-wall',
+        'top-wall',
+        'bottom-wall',
+    ])
 
 
 @enum.unique
@@ -81,6 +88,8 @@ class SolutionTier(enum.IntEnum):
     # Vaguely classified.
     SINGLE_OBJECT = enum.auto()
     GENERAL = enum.auto()
+    # From Tools Challenge.
+    VIRTUAL_TOOLS = enum.auto()
 
 
 NUM_COLORS: int = len(ROLE_TO_COLOR_ID)

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Sequence, Tuple
 import math
 
 from phyre.creator import constants
@@ -105,6 +105,53 @@ class TaskCreator(object):
         if color is not None:
             body.set_color(color)
         body.set(**set_kwargs)
+        return body
+
+    def add_convex_polygon(self,
+                           vertices: Sequence[Tuple[float, float]],
+                           dynamic: bool = True):
+        # Make sure the center mass is at zero. That makes rendering more precise.
+
+        (center_x, center_y), _ = shapes_lib.compute_polygon_centroid(vertices)
+        vertices = [(x - center_x, y - center_y) for x, y in vertices]
+        shape = shapes_lib.vertices_to_polygon(vertices)
+        diameter = shapes_lib.compute_shape_diameter(shape)
+        body = Body([shape],
+                    dynamic,
+                    object_type='poly',
+                    diameter=diameter,
+                    phantom_vertices=None)
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
+
+        self.scene.bodies.append(body._thrift_body)
+        self.body_list.append(body)
+        return body
+
+    def add_multipolygons(self,
+                          polygons: Sequence[Sequence[Tuple[float, float]]],
+                          dynamic: bool = True):
+        """Adds a union of convex polygons."""
+        # Make sure the center mass is at zero. That makes rendering more precise.
+        (center_x,
+         center_y), _ = shapes_lib.compute_union_of_polygons_centroid(polygons)
+        shapes = []
+        for vertices in polygons:
+            vertices = [(x - center_x, y - center_y) for x, y in vertices]
+            shapes.append(shapes_lib.vertices_to_polygon(vertices))
+        # TODO(akhti): fix diameter calculation.
+        diameter = shapes_lib.compute_shape_diameter(shapes[0])
+        body = Body(shapes,
+                    dynamic,
+                    object_type='compound',
+                    diameter=diameter,
+                    phantom_vertices=None)
+
+        body._thrift_body.position.x = center_x
+        body._thrift_body.position.y = center_y
+
+        self.scene.bodies.append(body._thrift_body)
+        self.body_list.append(body)
         return body
 
     def add_default_box(self, scale, dynamic=True):
@@ -249,6 +296,11 @@ class TaskCreator(object):
                     self.SpatialRelationship.TOUCHING):
                 raise ValueError('Cannot use anything but TOUCHING'
                                  ' for tiers BALL, TWO_BALLS, and RAMP.')
+            for body in self.body_list:
+                if "wall" not in body.object_type and not body._thrift_body.shapeType:
+                    raise ValueError('All bodies must have a defined shape'
+                                     ' for tiers BALL, TWO_BALLS, and RAMP.'
+                                     f' Bad object type: {body.object_type}')
 
         # Check that all polygons are convex.
         for body in self.task.scene.bodies:
@@ -294,12 +346,6 @@ class Body(object):
         body.bodyType = (scene_if.BodyType.DYNAMIC
                          if dynamic else scene_if.BodyType.STATIC)
 
-        self.set_object_type(object_type)
-        if object_type is not None:
-            obj_name = 'wall' if 'wall' in object_type else object_type
-            shape_type = shapes_lib.get_builders()[obj_name].SHAPE_TYPE
-            if shape_type:
-                body.shapeType = shape_type
         if diameter is not None:
             body.diameter = diameter
         self.phantom_vertices = phantom_vertices
@@ -310,6 +356,7 @@ class Body(object):
         self.dynamic = dynamic
         color = (_role_to_color_name('DYNAMIC')
                  if dynamic else _role_to_color_name('STATIC'))
+        self.set_object_type(object_type)
         self.set_color(color)
 
     def get_phantom_vertices(self):
@@ -326,9 +373,14 @@ class Body(object):
 
     def set_object_type(self, object_type):
         self.object_type = object_type
-        if object_type is not None:
-            if object_type not in constants.OBJECT_TYPES:
-                raise ValueError(f'Unknown object type: {object_type}')
+        if object_type is None:
+            return self
+        if object_type not in constants.ALL_OBJECT_TYPES:
+            raise ValueError(f'Unknown object type: {object_type}')
+        if object_type in constants.FACTORY_OBJECT_TYPES:
+            shape_type = shapes_lib.get_builders()[object_type].SHAPE_TYPE
+            if shape_type:
+                self._thrift_body.shapeType = shape_type
         return self
 
     def _yield_coordinates(self):

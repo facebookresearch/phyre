@@ -97,6 +97,34 @@ Open http://localhost:30303 to see all the tasks.
 
 Note, the snippet above assumes that you build the phyre [source](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md#installation-from-source) rather than from this pip package.
 
+
+### Importing tasks from Tools format
+
+It is possible to import tasks created from Tools Challenge format into the phyre. Note that due to different settings for friction and gravity the solvability of tasks may change. The following an example of importing a JSON definition of level.
+
+```python
+import numpy as np
+import phyre.creator as creator_lib
+import phyre.virtual_tools
+
+# Path to a definition of a level, such as https://github.com/k-r-allen/tool-games/blob/master/environment/Trials/Original/Basic.json.
+JSON_PATH = "..."
+
+
+@creator_lib.define_task_template(noop=[None])
+def build_task(C, noop):
+    del noop  # Unused template parameters.
+
+    with open(JSON_PATH) as stream:
+        task_dict = json.load(stream)
+
+    # Will convert the task.
+    phyre.virtual_tools.translate_to_phyre(C, task_dict["world"]
+
+    # Define a tier for the task.
+    C.set_meta(C.SolutionTier.VIRTUAL_TOOLS)
+```
+
 ## Solvability checking
 
 As a task script generates hundreds of different random sets hyperparameters, it is almost impossible to cherry-pick ones that result in solvable tasks.
