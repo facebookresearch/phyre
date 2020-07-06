@@ -81,6 +81,6 @@ If you use PHYRE in your experiments, please cite it:
 
 # Related projects
 
-[Virtual Tools](https://k-r-allen.github.io/tool-games/) a similar project aiming to research the structure necessary to capture human-like reasoning in these sorts of physics puzzles.
+[Virtual Tools](https://k-r-allen.github.io/tool-games/) is a similar project aiming to research the structure necessary to capture human-like reasoning in these sorts of physics puzzles.
 
-[ESPITI](https://blog.einstein.ai/explaining-solutions-to-physical-reasoning-tasks/) is framework based on PHYRE that connects physical reasoning and natural language explanations.
+[ESPRIT](https://blog.einstein.ai/explaining-solutions-to-physical-reasoning-tasks/) is a framework based on PHYRE that connects physical reasoning and natural language explanations.
