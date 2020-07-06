@@ -46,8 +46,8 @@ DEV_MODE = 'dev'
 DEMO_MODE = 'demo'
 PROD_TIERS = ('BALL', 'TWO_BALLS', 'VIRTUAL_TOOLS')
 
-TIER_TO_CODE = {'ball': 'B', 'two_balls': '2B', 'ramp': 'R'}
-CODE_TO_TIER = {v: k for k, v in TIER_TO_CODE.items()}
+TIER_TO_CODE = {'ball': 'B', 'two_balls': '2B', 'ramp': 'R', 'virtual_tools': 'B'}
+CODE_TO_FULLNAME = {'B': 'ball', '2B': 'two_balls', 'R': 'ramp'}
 
 INVALID_INPUT = action_simulator.SimulationStatus.INVALID_INPUT
 NOT_SOLVED = action_simulator.SimulationStatus.NOT_SOLVED
@@ -316,11 +316,11 @@ class ServiceHandler():
     def get_eval_user_input(self, task_id, tier_name):
         template_id = task_id.split(':')[0]
         if tier_name.endswith('U'):
-            tier_name = CODE_TO_TIER[tier_name[:-1]]
+            tier_name = CODE_TO_FULLNAME[tier_name[:-1]]
             solutions = self.eval_stats[template_id]['unstable_solutions'][
                 tier_name][task_id]
         else:
-            tier_name = CODE_TO_TIER[tier_name]
+            tier_name = CODE_TO_FULLNAME[tier_name]
             solutions = self.eval_stats[template_id]['solutions'][tier_name][
                 task_id]
         action_tier = action_mappers.ACTION_MAPPERS[tier_name]()
