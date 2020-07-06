@@ -27,7 +27,8 @@ def _eval_single_task(task_id, action_tier_name, attempts, use_compiled):
     if use_compiled:
         tasks = [phyre.loader.load_compiled_task_dict()[task_id]]
     else:
-        tasks = phyre.loader.load_tasks_from_folder(task_id_list=[task_id]).values()
+        tasks = phyre.loader.load_tasks_from_folder(
+            task_id_list=[task_id]).values()
     action_simulator = phyre.action_simulator.ActionSimulator(
         tasks, action_tier_name)
     real_attempts = 0

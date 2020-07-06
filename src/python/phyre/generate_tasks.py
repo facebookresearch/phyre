@@ -37,7 +37,6 @@ def _save_task(task_id, thrift_task, target_folder):
 def main(src_folder, target_folder, save_single_pickle, with_eval_stats):
     if not os.path.exists(target_folder):
         os.makedirs(target_folder)
-    load_virtial_tools_tasks()
     if with_eval_stats:
         eval_stats = phyre.eval_task_complexity.load_all_eval_stats()
     else:
