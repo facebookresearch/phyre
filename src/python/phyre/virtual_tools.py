@@ -17,7 +17,6 @@ https://arxiv.org/abs/1907.09620
 """
 import collections
 import json
-import pathlib
 import numpy as np
 
 import phyre.creator as creator_lib
