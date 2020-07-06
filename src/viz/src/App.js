@@ -240,6 +240,7 @@ class ThumbBlock extends Component {
       {this.props.caption ? <Divider horizontal><Header as='h3'>{this.props.caption}</Header>
         {this.props.subcaption ? <Header as='h4'>{this.props.subcaption}</Header>: ""}
       </Divider> : ""}
+        {this.props.subsubcaption ? <p>{this.props.subsubcaption}</p>: ""}
       {thumbs}
     </div>
   }
@@ -381,12 +382,18 @@ class WorldWithControls extends Component {
       const subcaption = this.state.task_id_prefix ? "" : {
         BALL: 'Tasks in this tier can be solved with a single ball.',
         TWO_BALLS: 'Tasks in this tier can be solved with two balls.',
-        VIRTUAL_TOOLS: 'Tasks in this tier can be solved with a single balls. This is an extension of the original dataset for cross-dataset generalization',
+        VIRTUAL_TOOLS: 'Tasks in this tier can be solved with a single ball.',
+      }[tier]
+      const subsubcaption = this.state.task_id_prefix ? "" : {
+        BALL: '',
+        TWO_BALLS: '',
+        VIRTUAL_TOOLS: 'This is an extension of the original dataset for cross-dataset generalization.',
       }[tier]
       return <ThumbBlock
           key={tier}
           caption={caption}
           subcaption={subcaption}
+          subsubcaption={subsubcaption}
           task_ids={tier_to_tasks[tier]}
           quazi_task_id_to_task_id={this.state.quazi_task_id_to_task_id}
           num_teasks_in_tempalte={this.state.num_teasks_in_tempalte}
