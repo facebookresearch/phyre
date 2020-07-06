@@ -23,7 +23,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install build-essential wget git vim --yes && apt-get clean
+RUN apt-get update && apt-get install build-essential wget git --yes && apt-get clean
 
 # Installing conda.
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.7.10-Linux-x86_64.sh -O ~/anaconda.sh && \
@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install git --yes && apt-get clean
 RUN . /opt/conda/etc/profile.d/conda.sh && conda activate phyre && pip install -e src/python
 
 # Run test.
-RUN make generate_tasks
+RUN make test
 
 # Making phyre activated by default.
 RUN echo "conda activate phyre" >> ~/.bashrc
@@ -60,4 +60,4 @@ RUN echo "conda activate phyre" >> ~/.bashrc
 EXPOSE 30303
 
 # Default comand is to run the viz.
-CMD python -m phyre.server --port 30303 --mode dev
+CMD python -m phyre.server --port 30303
