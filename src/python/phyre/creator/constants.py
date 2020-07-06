@@ -64,14 +64,15 @@ FACTORY_OBJECT_TYPES = frozenset([
     'standingsticks',
 ])
 
-ALL_OBJECT_TYPES = frozenset(list(FACTORY_OBJECT_TYPES) + [
-    'poly',
-    'compound',
-    'left-wall',
-    'right-wall',
-    'top-wall',
-    'bottom-wall',
-])
+ALL_OBJECT_TYPES = frozenset(
+    list(FACTORY_OBJECT_TYPES) + [
+        'poly',
+        'compound',
+        'left-wall',
+        'right-wall',
+        'top-wall',
+        'bottom-wall',
+    ])
 
 
 @enum.unique
