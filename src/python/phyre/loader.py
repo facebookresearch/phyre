@@ -59,8 +59,8 @@ def load_task_script(template_id_or_path: str) -> Tuple[str, str, TaskScript]:
 
 
 def load_task_scripts_from_folder(
-        task_folder=str(phyre.settings.TASK_SCRIPTS_DIR), template_id_list=None
-) -> Sequence[Tuple[str, str, TaskScript]]:
+        task_folder=str(phyre.settings.TASK_SCRIPTS_DIR),
+        template_id_list=None) -> Sequence[Tuple[str, str, TaskScript]]:
     """Loads task builders from the folder.
 
     Args:
@@ -99,7 +99,7 @@ def load_task_scripts_from_folder(
 
 
 def load_tasks_from_folder(task_folder: str = str(
-    phyre.settings.TASK_SCRIPTS_DIR),
+        phyre.settings.TASK_SCRIPTS_DIR),
                            template_id_list: Optional[Iterable[str]] = None,
                            task_id_list: Optional[Iterable[str]] = None,
                            eval_stats=None) -> Mapping[str, task_if.Task]:
@@ -153,8 +153,8 @@ def task_id_to_pickle(task_id):
         return f'tasks{prefix}.bin.lzma'
 
 
-def load_compiled_task_dict(
-        task_ids: Optional[Sequence[str]] = None) -> Dict[str, task_if.Task]:
+def load_compiled_task_dict(task_ids: Optional[Sequence[str]] = None
+                           ) -> Dict[str, task_if.Task]:
     """Helper function to load the default task dump."""
     if task_ids is not None:
         fnames = frozenset(map(task_id_to_pickle, task_ids))

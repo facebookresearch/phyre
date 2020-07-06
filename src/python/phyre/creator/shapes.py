@@ -159,9 +159,8 @@ def _merge_centroids(points, masses):
     return (x, y), mass
 
 
-def compute_polygon_centroid(
-    vertices: Sequence[Tuple[float,
-                             float]]) -> Tuple[Tuple[float, float], float]:
+def compute_polygon_centroid(vertices: Sequence[Tuple[float, float]]
+                            ) -> Tuple[Tuple[float, float], float]:
     """Compute center of mass and mass of a convex polygon."""
 
     def _triangle_centroid(points):
@@ -185,7 +184,7 @@ def compute_polygon_centroid(
 
 
 def compute_union_of_polygons_centroid(
-    polygons: Sequence[Sequence[Tuple[float, float]]]
+        polygons: Sequence[Sequence[Tuple[float, float]]]
 ) -> Tuple[Tuple[float, float], float]:
     """Compute center of mass and mass of a convex polygon."""
     points, masses = zip(*map(compute_polygon_centroid, polygons))

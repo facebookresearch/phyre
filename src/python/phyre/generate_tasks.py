@@ -71,9 +71,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('src_folder', help='Folder with "taskXXX.py" files')
     parser.add_argument('target_folder')
-    parser.add_argument('--save-single-pickle',
-                        action='store_true',
-                        help='If set, tasks will be grouped by tiers and pickled')
+    parser.add_argument(
+        '--save-single-pickle',
+        action='store_true',
+        help='If set, tasks will be grouped by tiers and pickled')
     parser.add_argument('--with-eval-stats',
                         action='store_true',
                         help='Use eval stats when possible')
