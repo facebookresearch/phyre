@@ -5,7 +5,7 @@ This docs describes how we store and represent tasks and simulations and how one
 ## Data structures
 
 Phyre uses the [Box2d](https://box2d.org/) engine under the hood for all the simulations.
-To make it possible to access tasks and simulation results in C++, Python, and JavaScript, we use [Thrift](http://thrift.apache.org/) for cross-language representation of all data structures. 
+To make it possible to access tasks and simulation results in C++, Python, and JavaScript, we use [Thrift](http://thrift.apache.org/) for cross-language representation of all data structures.
 
 The three most important structures are Scene (defined in [scene.thrift](../src/if/scene.thrif)), Task and TaskSimulation (both are in [task.thrift](../src/if/task.thrif)).
 Scene contains all objects that should be a part of simulation, i.e., it contains both the bodies from task definition and bodies added by the user. Task contains a scene and the definition of the goal of task, i.e., a relation that should hold for the to be considered solved. Finally, TaskSimulation contains positions of all objects at every timestamp. It also contains information on whether the goal condition was satisfied at any point of time and whether the task is deemed solved.

@@ -78,7 +78,7 @@ The only defined function, `build_task`, defines how to build a task given a `Ta
 `creator_lib.define_task_template` will call `build_task` to create some number of tasks from the cartesian product of ranges for all the hyperparameters. By default, up `100` instances are created. To make tasks more diverse we select a random subset of parameters from the set rather than the first 100 elements.
 
 To a new object use `C.add`. It takes a string description of the object and the scale of the object. Description is 2 words: `(static|dynamic) <object type>`. Object type is one of ball, bar, jar, and standingsticks. These are the standard objects used in the main Phyre tiers.
-There are two ways to define a custom shape. Either by adding it to [shapes.py](https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/creator/shapes.py) or by specifying its shape directly as a convex polygon (`C.add_convex_polygon`) or a union of convex polygons (`C.add_multipolygons`). 
+There are two ways to define a custom shape. Either by adding it to [shapes.py](https://github.com/facebookresearch/phyre/blob/master/src/python/phyre/creator/shapes.py) or by specifying its shape directly as a convex polygon (`C.add_convex_polygon`) or a union of convex polygons (`C.add_multipolygons`).
 
 The function returns `Body` [object](https://github.com/facebookresearch/phyre/blob/08643a271b7f0b1e9dddfb38bfab6e8501326d2b/src/python/phyre/creator/creator.py#L261). It could be used to move the body, e.g., `ball1.set_right(C.scene.width)` will push the object to the corner, or to query object position, e.g., `ball2.set_center_x(ball1.center_x)` will align the objects horizontally. Refer to the methods of the class for the full interface.
 
@@ -97,9 +97,10 @@ Open http://localhost:30303 to see all the tasks.
 
 Note, the snippet above assumes that you build the phyre [source](https://github.com/facebookresearch/phyre/blob/master/INSTALLATION.md#installation-from-source) rather than from this pip package.
 
+
 ### Importing tasks from Tools format
 
-It is possible to import tasks created from Tools Challenge format into the phyre. Note that due to different settings for friction and gravity the solvability of tasks may change. The following an example of importing a JSON definition of level. 
+It is possible to import tasks created from Tools Challenge format into the phyre. Note that due to different settings for friction and gravity the solvability of tasks may change. The following an example of importing a JSON definition of level.
 
 ```python
 import numpy as np
@@ -116,7 +117,7 @@ def build_task(C, noop):
 
     with open(JSON_PATH) as stream:
         task_dict = json.load(stream)
-    
+
     # Will convert the task.
     phyre.virtual_tools.translate_to_phyre(C, task_dict["world"]
 
@@ -126,8 +127,8 @@ def build_task(C, noop):
 
 ## Solvability checking
 
-As a task script generates hundreds of different random sets hyperparameters, it is almost impossible to cherry-pick ones that result in solvable tasks. 
-Phyre contains several tools to aid with task selection. 
+As a task script generates hundreds of different random sets hyperparameters, it is almost impossible to cherry-pick ones that result in solvable tasks.
+Phyre contains several tools to aid with task selection.
 
 The simplest tool is task bruteforcer. It could be invoked like that:
 
