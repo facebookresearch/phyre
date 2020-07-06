@@ -16,6 +16,8 @@ possible.
 
 ![phyre](imgs/phyre_tasks.gif)
 
+# How to use the PHYRE
+
 Phyre framework could be used for several tasks related to physical reasoning.
 
   * As a benchmark: Phyre allows to evaluate different reasoning agents on a predefined set of tasks and complexity tiers. You can explore the tasks and try to solve them using the [demo](http://player.phyre.ai/).
@@ -76,3 +78,9 @@ If you use PHYRE in your experiments, please cite it:
     journal={arXiv:1908.05656}
 }
 ```
+
+# Related projects
+
+[Virtual Tools](https://k-r-allen.github.io/tool-games/) a similar project aiming to research the structure necessary to capture human-like reasoning in these sorts of physics puzzles.
+
+[ESPITI](https://blog.einstein.ai/explaining-solutions-to-physical-reasoning-tasks/) is framework based on PHYRE that connects physical reasoning and natural language explanations.
