@@ -288,7 +288,7 @@ def train(output_dir,
         elif negative_sampling_prob < 1:
             probs = (is_solved.numpy() * (1.0 - negative_sampling_prob) +
                      negative_sampling_prob)
-            probs /= probs.sum()
+            probs =probs/ probs.sum()
             while True:
                 yield rng.choice(indices, size=train_batch_size, p=probs)
         else:
