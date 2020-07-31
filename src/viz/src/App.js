@@ -387,7 +387,7 @@ class WorldWithControls extends Component {
       const subsubcaption = this.state.task_id_prefix ? "" : {
         BALL: '',
         TWO_BALLS: '',
-        VIRTUAL_TOOLS: 'This is an extension of the original dataset for cross-dataset generalization.',
+        VIRTUAL_TOOLS: <span>This is a randomly generated set of levels based on the <a href="https://k-r-allen.github.io/tool-games/">Virtual Tools</a> environment for cross-dataset generalization.</span>,
       }[tier]
       return <ThumbBlock
           key={tier}
