@@ -46,7 +46,12 @@ DEV_MODE = 'dev'
 DEMO_MODE = 'demo'
 PROD_TIERS = ('BALL', 'TWO_BALLS', 'VIRTUAL_TOOLS')
 
-TIER_TO_CODE = {'ball': 'B', 'two_balls': '2B', 'ramp': 'R', 'virtual_tools': 'B'}
+TIER_TO_CODE = {
+    'ball': 'B',
+    'two_balls': '2B',
+    'ramp': 'R',
+    'virtual_tools': 'B'
+}
 CODE_TO_FULLNAME = {'B': 'ball', '2B': 'two_balls', 'R': 'ramp'}
 
 INVALID_INPUT = action_simulator.SimulationStatus.INVALID_INPUT
