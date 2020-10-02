@@ -24,12 +24,12 @@ import numpy as np
 import phyre
 
 
-def _worker(tier, task_id, num_jobs, num_actions, job_id):
+def _worker(action_tier, task_id, num_jobs, num_actions, job_id):
     action_path = (
-        phyre.simulation_cache.get_partial_cache_folder(num_actions) / tier /
-        phyre.simulation_cache.ACTION_FILE_NAME)
+        phyre.simulation_cache.get_partial_cache_folder(num_actions) /
+        action_tier / phyre.simulation_cache.ACTION_FILE_NAME)
     actions = joblib.load(action_path)
-    sim = phyre.initialize_simulator([task_id], tier)
+    sim = phyre.initialize_simulator([task_id], action_tier)
 
     actions = np.array_split(actions, num_jobs)[job_id]
     statuses = [

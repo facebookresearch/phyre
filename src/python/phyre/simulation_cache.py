@@ -29,7 +29,8 @@ ACTION_SEED = 42  # Default seed for the action space.
 PHYRE_CACHE_ENV = 'PHYRE_CACHE_DIR'
 ACTION_FILE_NAME = 'actions.pickle'
 CACHE_FILE_NAME = 'simulation_cache.gz'
-TIERS = ('ball', 'two_balls')  # Cache is computed of these tiers only.
+# Map: action_tier -> tuple of task tiers.
+TIERS = {'ball': ('BALL', 'VIRTUAL_TOOLS'), 'two_balls': 'TWO_BALS'}
 
 DEFAULT_NUM_ACTIONS = 100000
 
