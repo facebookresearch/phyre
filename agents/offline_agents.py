@@ -176,17 +176,21 @@ class PriorRankingAgent(AgentWithSimulationCache):
 
       assert tuple(task_ids) == simulator.task_ids
       for i, task_id in enumerate(task_ids):
-        statuses = cache.load_simulation_states(task_id)
+        # statuses = cache.load_simulation_states(task_id)
         initial_featurized_objects = simulator.initial_featurized_objects[i]
 
         action_index = 0
         while evaluator.get_attempts_for_task(i) < max_attempts_per_task:
-          action = cache.action_array[action_index]
-          status = statuses[action_index]
-          ##status, _ = simulator.simulate_single(i, action, need_images=False)
-          if status != phyre.simulation_cache.INVALID and cls.in_prior(action, initial_featurized_objects):
-              evaluator.maybe_log_attempt(i, status)
-          action_index += 1
+            if action_index >= len(cache.action_array):
+                print(task_id, evaluator.get_attempts_for_task(i))
+                break
+            action = cache.action_array[action_index]
+            # status = statuses[action_index]
+            ##status, _ = simulator.simulate_single(i, action, need_images=False)
+            if cls.in_prior(action, initial_featurized_objects):
+                status, _ = simulator.simulate_single(i, action, need_images=False)
+                evaluator.maybe_log_attempt(i, status)
+            action_index += 1
 
       return evaluator
 
