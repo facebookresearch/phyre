@@ -31,6 +31,7 @@ import heapq
 import logging
 
 import numpy as np
+import math
 import tqdm
 
 import phyre
@@ -130,37 +131,42 @@ class PriorRankingAgent(AgentWithSimulationCache):
                             help='which tier is being used.')
                             
     @classmethod
-    def feature_to_vertices(cls, feature):
-      '''
-      Takes in a featurized object and returns its vertices in a list
-      '''
-      object_properties = phyre.objects_util._object_features_to_values(feature)
-      builder = phyre.creator.shapes.get_builders()[object_properties['shape_type']]
-      shapes, phantom_vertices = builder.build(
-          diameter=object_properties['diameter'])
+    def yield_coordinates(cls, body):
+        x = body.position.x
+        y = body.position.y
+        def _rotate(x_in, y_in, radians):
+            cos, sin = math.cos(radians), math.sin(radians)
+            return x_in * cos - y_in * sin, x_in * sin + y_in * cos
+        def _to_absolute(rel_x, rel_y, radians):
+            rel_x, rel_y = _rotate(rel_x, rel_y, radians)
+            return rel_x + x, rel_y + y
 
-      body = phyre.creator.creator.Body(shapes, object_properties['dynamic'],
-                  object_properties['shape_type'],
-                  object_properties['diameter'], phantom_vertices)
-      body.push(object_properties['x'], object_properties['y'])
-      body.set_angle(object_properties['angle'])
-      return [coord for coord in body._yield_coordinates()]
+        for shape in body.shapes:
+            if shape.circle:
+                r = shape.circle.radius
+                yield _to_absolute(r, r, radians=0)
+                yield _to_absolute(-r, -r, radians=0)
+            else:
+                assert shape.polygon
+                for v in shape.polygon.vertices:
+                    yield _to_absolute(v.x,
+                                       v.y,
+                                       radians=body.angle)
 
     @classmethod
-    def in_prior(cls, action, featurized_objects):
+    def in_prior(cls, action, bodies):
       '''
       Takes in an action and initial_featurized_objects and returns whether the action
       is in the prior (above or below a dynamic object)
       '''
       action_radius = round(action[2]*30+2)/256
-      for feature in featurized_objects.features[0]:
-        if feature[11] == 1 or feature[13] == 1:
-          # filter out static (purple and black)
+      for body in bodies:
+        if body.bodyType == 1:
           continue
-        vertices = cls.feature_to_vertices(feature)
-        max_x = max(coord[0] for coord in vertices)/256
-        min_x = min(coord[0] for coord in vertices)/256
-        if action[0] + action_radius > min_x and action[0] - action_radius < max_x:
+        vertices = [coord for coord in cls.yield_coordinates(body)]
+        max_x = (max(coord[0] for coord in vertices)+5)/256
+        min_x = (min(coord[0] for coord in vertices)-5)/256
+        if action[0] > min_x and action[0] < max_x:
             return True
       return False
 
@@ -170,26 +176,22 @@ class PriorRankingAgent(AgentWithSimulationCache):
 
       cache = state['cache']
       evaluator = phyre.Evaluator(task_ids)
-
       # Now let's create a simulator for this task
       simulator = phyre.initialize_simulator(task_ids, tier)
 
       assert tuple(task_ids) == simulator.task_ids
       for i, task_id in enumerate(task_ids):
-        # statuses = cache.load_simulation_states(task_id)
-        initial_featurized_objects = simulator.initial_featurized_objects[i]
-
         action_index = 0
         while evaluator.get_attempts_for_task(i) < max_attempts_per_task:
             if action_index >= len(cache.action_array):
                 print(task_id, evaluator.get_attempts_for_task(i))
                 break
             action = cache.action_array[action_index]
-            # status = statuses[action_index]
-            ##status, _ = simulator.simulate_single(i, action, need_images=False)
-            if cls.in_prior(action, initial_featurized_objects):
+
+            if cls.in_prior(action, simulator._tasks[i].scene.bodies):
                 status, _ = simulator.simulate_single(i, action, need_images=False)
-                evaluator.maybe_log_attempt(i, status)
+                if status != phyre.simulation_cache.INVALID:
+                    evaluator.maybe_log_attempt(i, status)
             action_index += 1
 
       return evaluator
