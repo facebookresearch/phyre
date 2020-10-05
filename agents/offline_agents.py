@@ -161,7 +161,6 @@ class PriorRankingAgent(AgentWithSimulationCache):
       Takes in an action and initial_featurized_objects and returns whether the action
       is in the prior (above or below a dynamic object)
       '''
-        action_radius = round(action[2] * 30 + 2) / 256
         for body in bodies:
             if body.bodyType == 1:
                 continue
