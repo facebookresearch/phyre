@@ -183,20 +183,18 @@ class PriorRankingAgent(AgentWithSimulationCache):
 
         assert tuple(task_ids) == simulator.task_ids
         for i, task_id in enumerate(task_ids):
-            action_index = 0
-            while evaluator.get_attempts_for_task(i) < max_attempts_per_task:
-                if action_index >= len(cache.action_array):
-                    print(task_id, evaluator.get_attempts_for_task(i))
+            statuses = cache.load_simulation_states(task_id)
+            valid_mask = statuses != phyre.simulation_cache.INVALID
+            actions, statuses = cache.action_array[valid_mask], statuses[
+                valid_mask]
+            for action, status in zip(actions, statuses):
+                if evaluator.get_attempts_for_task(i) >= max_attempts_per_task:
                     break
-                action = cache.action_array[action_index]
-
                 if cls.in_prior(action, simulator._tasks[i].scene.bodies):
-                    status, _ = simulator.simulate_single(i,
-                                                          action,
-                                                          need_images=False)
-                    if status != phyre.simulation_cache.INVALID:
-                        evaluator.maybe_log_attempt(i, status)
-                action_index += 1
+                    evaluator.maybe_log_attempt(i, status)
+            else:
+                print("Not enough actions in prior", task_id,
+                      evaluator.get_attempts_for_task(i))
 
         return evaluator
 
