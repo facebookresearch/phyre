@@ -41,7 +41,7 @@ NOT_SOLVED = int(phyre.action_simulator.SimulationStatus.NOT_SOLVED)
 
 def get_default_100k_cache(tier: str) -> 'SimulationCache':
     """Get cache with results for simulation of 100k "default" actions."""
-    url = (f'https://dl.fbaipublicfiles.com/phyre/simulation_cache/v0'
+    url = (f'https://dl.fbaipublicfiles.com/phyre/simulation_cache/v1'
            f'/{DEFAULT_NUM_ACTIONS}/{tier}/{CACHE_FILE_NAME}')
 
     cache_dir = (phyre.simulation_cache.get_cache_folder(DEFAULT_NUM_ACTIONS) /
