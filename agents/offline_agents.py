@@ -116,9 +116,11 @@ class RandomAgent(AgentWithSimulationCache):
                 evaluator.maybe_log_attempt(i, status)
         return evaluator
 
+
 class PriorRankingAgent(AgentWithSimulationCache):
     """Agent that selects actions that are close to dynamic objects.
     Author: k-r-allen"""
+
     @classmethod
     def name(cls):
         return 'object-prior'
@@ -129,14 +131,16 @@ class PriorRankingAgent(AgentWithSimulationCache):
         parser.add_argument('--tier',
                             type=str,
                             help='which tier is being used.')
-                            
+
     @classmethod
     def yield_coordinates(cls, body):
         x = body.position.x
         y = body.position.y
+
         def _rotate(x_in, y_in, radians):
             cos, sin = math.cos(radians), math.sin(radians)
             return x_in * cos - y_in * sin, x_in * sin + y_in * cos
+
         def _to_absolute(rel_x, rel_y, radians):
             rel_x, rel_y = _rotate(rel_x, rel_y, radians)
             return rel_x + x, rel_y + y
@@ -149,52 +153,53 @@ class PriorRankingAgent(AgentWithSimulationCache):
             else:
                 assert shape.polygon
                 for v in shape.polygon.vertices:
-                    yield _to_absolute(v.x,
-                                       v.y,
-                                       radians=body.angle)
+                    yield _to_absolute(v.x, v.y, radians=body.angle)
 
     @classmethod
     def in_prior(cls, action, bodies):
-      '''
+        '''
       Takes in an action and initial_featurized_objects and returns whether the action
       is in the prior (above or below a dynamic object)
       '''
-      action_radius = round(action[2]*30+2)/256
-      for body in bodies:
-        if body.bodyType == 1:
-          continue
-        vertices = [coord for coord in cls.yield_coordinates(body)]
-        max_x = (max(coord[0] for coord in vertices)+5)/256
-        min_x = (min(coord[0] for coord in vertices)-5)/256
-        if action[0] > min_x and action[0] < max_x:
-            return True
-      return False
+        action_radius = round(action[2] * 30 + 2) / 256
+        for body in bodies:
+            if body.bodyType == 1:
+                continue
+            vertices = [coord for coord in cls.yield_coordinates(body)]
+            max_x = (max(coord[0] for coord in vertices) + 5) / 256
+            min_x = (min(coord[0] for coord in vertices) - 5) / 256
+            if action[0] > min_x and action[0] < max_x:
+                return True
+        return False
 
     @classmethod
     def eval(cls, state: State, task_ids: TaskIds, max_attempts_per_task: int,
              tier: str, **kwargs):
 
-      cache = state['cache']
-      evaluator = phyre.Evaluator(task_ids)
-      # Now let's create a simulator for this task
-      simulator = phyre.initialize_simulator(task_ids, tier)
+        cache = state['cache']
+        evaluator = phyre.Evaluator(task_ids)
+        # Now let's create a simulator for this task
+        simulator = phyre.initialize_simulator(task_ids, tier)
 
-      assert tuple(task_ids) == simulator.task_ids
-      for i, task_id in enumerate(task_ids):
-        action_index = 0
-        while evaluator.get_attempts_for_task(i) < max_attempts_per_task:
-            if action_index >= len(cache.action_array):
-                print(task_id, evaluator.get_attempts_for_task(i))
-                break
-            action = cache.action_array[action_index]
+        assert tuple(task_ids) == simulator.task_ids
+        for i, task_id in enumerate(task_ids):
+            action_index = 0
+            while evaluator.get_attempts_for_task(i) < max_attempts_per_task:
+                if action_index >= len(cache.action_array):
+                    print(task_id, evaluator.get_attempts_for_task(i))
+                    break
+                action = cache.action_array[action_index]
 
-            if cls.in_prior(action, simulator._tasks[i].scene.bodies):
-                status, _ = simulator.simulate_single(i, action, need_images=False)
-                if status != phyre.simulation_cache.INVALID:
-                    evaluator.maybe_log_attempt(i, status)
-            action_index += 1
+                if cls.in_prior(action, simulator._tasks[i].scene.bodies):
+                    status, _ = simulator.simulate_single(i,
+                                                          action,
+                                                          need_images=False)
+                    if status != phyre.simulation_cache.INVALID:
+                        evaluator.maybe_log_attempt(i, status)
+                action_index += 1
 
-      return evaluator
+        return evaluator
+
 
 class MaxHeapWithSideLoad():
     """A max-heap that stores unique keys with priority."""
