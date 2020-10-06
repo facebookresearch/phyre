@@ -123,7 +123,7 @@ class PriorRankingAgent(AgentWithSimulationCache):
 
     @classmethod
     def name(cls):
-        return 'object-prior'
+        return 'object_prior'
 
     @classmethod
     def add_parser_arguments(cls, parser: 'argparse.ArgumentParser') -> None:
@@ -177,7 +177,6 @@ class PriorRankingAgent(AgentWithSimulationCache):
 
         cache = state['cache']
         evaluator = phyre.Evaluator(task_ids)
-        # Now let's create a simulator for this task
         simulator = phyre.initialize_simulator(task_ids, tier)
 
         assert tuple(task_ids) == simulator.task_ids
