@@ -17,6 +17,7 @@ from typing import Callable, Sequence, Tuple
 import logging
 import pathlib
 import shutil
+import sys
 
 from run_experiment import get_finals_args, get_output_dir, run, Args, DummyExecutor
 import phyre
