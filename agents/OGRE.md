@@ -3,15 +3,29 @@
 Contains code to reproduce agent baselines from  OGRE dataset (Add link!).
 
 ## Abstract
+
 If an agent understands how to reason about some objects, can it generalize this understanding to new objects that it has never seen before?
-We propose the Object-based Generalization for Reasoning Environment (OGRE) for testing object generalization in the context of \emph{creative reasoning} and \emph{efficient acting}.
+We propose the **Object-based Generalization for Reasoning Environment (OGRE)** for testing object generalization in the context of *creative reasoning* and *efficient acting*.
+
 OGRE emphasizes evaluating agents by how efficiently they solve novel creative reasoning tasks, not just how well they can predict the future.
 OGRE provides two levels of generalization: generalization over reasoning strategies with familiar objects, and generalization over new object types that still share similar material properties to those in training.
-We run three baseline agents on OGRE, showing that an image-based deep Q network can learn reasoning strategies that generalize in a limited way across familiar object types, but does not generalize at all to new object types.
-We hope OGRE will encourage advances in building object representations that more explicitly enable reasoning and planning  compared to previous benchmarks.
 
 
-![phyre](../imgs/ogre.png)
+<p align="center"><img width="70%" src="../imgs/ogre.png" /></p>
+
+<p style="padding: 0 20px;">
+
+<b>A Top:</b> an example of a level within the training set of OGRE. Black and purple objects are static; objects with any other color are dynamic and subject to gravity. Actions are single balls at a position (`x`, `y`) with radius `r`, depicted as a red ball which falls under gravity once placed. Agents can observe the outcomes of these actions for a large set of training levels. Bottom: other example levels that might be included in training.
+
+<b>B:</b> cross-template testing includes levels that use the same object representations, but require different kinds of strategies to succeed.
+
+<b>C:</b> cross-dataset testing includes a set of levels from the Virtual Tools environment, which represents both goals and object shapes differently.
+
+</p>
+
+## Explore the tasks
+
+You can explore all the task in the [PHYRE player](https://player.phyre.ai/)
 
 ## Agents
 
