@@ -160,22 +160,33 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            mkdir install
-           cp src/python/dist/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+           cp src/python/dist/phyre-?.?.?-cp36-none-manylinux1_x86_64.whl install/
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -n test python=3.6
            conda activate test
-           pip install install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+           pip install install/phyre-*.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+          path: install/phyre-?.?.?-cp36-none-manylinux1_x86_64.whl
 
-  build-osx-wheel:
+  build-osx-wheel-10:
     macos:
       xcode: "10.0.0"
+    steps:
+      - build-osx-wheel
+
+  build-osx-wheel-11:
+    macos:
+      xcode: "11.0.0"
+    steps:
+      - build-osx-wheel
+
+commands:
+  build-osx-wheel:
     steps:
       - checkout
       # Install conda.
@@ -244,18 +255,18 @@ jobs:
            export PATH="$HOME/miniconda/bin:$PATH"
            source $HOME/miniconda/bin/activate
            mkdir install
-           cp src/python/dist/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+           cp src/python/dist/phyre-?.?.?-cp36-*.whl install/
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -y -n test python=3.6
            conda activate test
-           pip install install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+           pip install install/phyre-*.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+          path: install/phyre-*.whl
 
 workflows:
   version: 2
