@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+
+# Actual jobs.
 jobs:
   build:
     docker:
@@ -131,6 +134,10 @@ jobs:
            conda init bash
            . ~/.bashrc
            conda activate phyre
+           apt-get update
+           # Due to ABI incompability of the conda's boost and circle ci image,
+           # use boost from the image.
+           apt-get install build-essential libboost-all-dev --yes
            pip install -e src/python
 
       # Save node package cache.
@@ -160,22 +167,26 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            mkdir install
-           cp src/python/dist/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+           cp src/python/dist/phyre-?.?.?-cp36-none-manylinux1_x86_64.whl install/
+           ls -l install/
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -n test python=3.6
            conda activate test
-           pip install install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+           pip install install/phyre-*.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/phyre-0.2.1-cp36-none-manylinux1_x86_64.whl
+          path: install/
 
   build-osx-wheel:
+    parameters:
+       xcode_version:
+         type: string
     macos:
-      xcode: "10.0.0"
+      xcode: << parameters.xcode_version >>
     steps:
       - checkout
       # Install conda.
@@ -236,53 +247,46 @@ jobs:
            export PATH="$HOME/miniconda/bin:$PATH"
            source $HOME/miniconda/bin/activate
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name macosx_10_0_universal
+           cd src/python/ && python3 setup.py sdist bdist_wheel --plat-name macosx_$(python -c "import platform; print('_'.join(platform.mac_ver()[0].split('.')[:2]))")_x86_64
 
       # Test wheel in new empty conda env
       - run:
          command: |
+
            export PATH="$HOME/miniconda/bin:$PATH"
            source $HOME/miniconda/bin/activate
            mkdir install
-           cp src/python/dist/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+           cp src/python/dist/phyre-?.?.?-cp36-*.whl install/
+           ls -l install/
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -y -n test python=3.6
            conda activate test
-           pip install install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+           pip install install/phyre-*.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/phyre-0.2.1-cp36-none-macosx_10_0_universal.whl
+          path: install/
 
+# Putting all together
 workflows:
-  version: 2
+  version: 2.1
   build-phyre:
     jobs:
-      - yapf-formatting:
-          filters:
-            tags:
-              only: /^build-wheel.*/
-      - build:
-          filters:
-            tags:
-              only: /^build-wheel.*/
-      #Build the wheels if commit tag starts with build-wheel
+      - yapf-formatting
+      - build
+      #Build the wheels if branch names starts with release
       - build-linux-wheel:
-          requires:
-            - build
           filters:
-            tags:
-              only: /^build-wheel.*/
             branches:
-              ignore: /.*/
+              only: /^release.*/
       - build-osx-wheel:
-          requires:
-            - build
+          matrix:
+            parameters:
+              xcode_version: ["10.3.0"]
           filters:
-            tags:
-              only: /^build-wheel.*/
             branches:
-              ignore: /.*/
+              only: /^release.*/
+
