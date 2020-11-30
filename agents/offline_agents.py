@@ -31,6 +31,7 @@ import heapq
 import logging
 
 import numpy as np
+import math
 import tqdm
 
 import phyre
@@ -113,6 +114,86 @@ class RandomAgent(AgentWithSimulationCache):
                 statuses != phyre.simulation_cache.INVALID]
             for status in valid_statuses[:max_attempts_per_task]:
                 evaluator.maybe_log_attempt(i, status)
+        return evaluator
+
+
+class PriorRankingAgent(AgentWithSimulationCache):
+    """Agent that selects actions that are close to dynamic objects.
+    Author: k-r-allen"""
+
+    @classmethod
+    def name(cls):
+        return 'object_prior'
+
+    @classmethod
+    def add_parser_arguments(cls, parser: 'argparse.ArgumentParser') -> None:
+        parser = parser.add_argument_group('%s params' % cls.__name__)
+        parser.add_argument('--tier',
+                            type=str,
+                            help='which tier is being used.')
+
+    @classmethod
+    def yield_coordinates(cls, body):
+        x = body.position.x
+        y = body.position.y
+
+        def _rotate(x_in, y_in, radians):
+            cos, sin = math.cos(radians), math.sin(radians)
+            return x_in * cos - y_in * sin, x_in * sin + y_in * cos
+
+        def _to_absolute(rel_x, rel_y, radians):
+            rel_x, rel_y = _rotate(rel_x, rel_y, radians)
+            return rel_x + x, rel_y + y
+
+        for shape in body.shapes:
+            if shape.circle:
+                r = shape.circle.radius
+                yield _to_absolute(r, r, radians=0)
+                yield _to_absolute(-r, -r, radians=0)
+            else:
+                assert shape.polygon
+                for v in shape.polygon.vertices:
+                    yield _to_absolute(v.x, v.y, radians=body.angle)
+
+    @classmethod
+    def in_prior(cls, action, bodies):
+        '''
+      Takes in an action and initial_featurized_objects and returns whether the action
+      is in the prior (above or below a dynamic object)
+      '''
+        for body in bodies:
+            if body.bodyType == 1:
+                continue
+            vertices = [coord for coord in cls.yield_coordinates(body)]
+            max_x = (max(coord[0] for coord in vertices) + 5) / 256
+            min_x = (min(coord[0] for coord in vertices) - 5) / 256
+            if action[0] > min_x and action[0] < max_x:
+                return True
+        return False
+
+    @classmethod
+    def eval(cls, state: State, task_ids: TaskIds, max_attempts_per_task: int,
+             tier: str, **kwargs):
+
+        cache = state['cache']
+        evaluator = phyre.Evaluator(task_ids)
+        simulator = phyre.initialize_simulator(task_ids, tier)
+
+        assert tuple(task_ids) == simulator.task_ids
+        for i, task_id in enumerate(task_ids):
+            statuses = cache.load_simulation_states(task_id)
+            valid_mask = statuses != phyre.simulation_cache.INVALID
+            actions, statuses = cache.action_array[valid_mask], statuses[
+                valid_mask]
+            for action, status in zip(actions, statuses):
+                if evaluator.get_attempts_for_task(i) >= max_attempts_per_task:
+                    break
+                if cls.in_prior(action, simulator._tasks[i].scene.bodies):
+                    evaluator.maybe_log_attempt(i, status)
+            else:
+                print("Not enough actions in prior", task_id,
+                      evaluator.get_attempts_for_task(i))
+
         return evaluator
 
 

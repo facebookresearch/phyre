@@ -40,9 +40,10 @@ def main_tier(tier, task_ids, num_actions):
 def main(num_actions):
     task_dict = phyre.loader.load_compiled_task_dict()
     task_ids_per_tier = {'ball': [], 'two_balls': []}
-    for task_id, task in task_dict.items():
-        if task.tier.lower() in task_ids_per_tier:
-            task_ids_per_tier[task.tier.lower()].append(task_id)
+    for action_tier, task_tiers in phyre.simulation_cache.TIERS.items():
+        for task_id, task in task_dict.items():
+            if task.tier in task_tiers:
+                task_ids_per_tier[action_tier].append(task_id)
 
     for tier, task_ids in task_ids_per_tier.items():
         main_tier(tier, task_ids, num_actions)

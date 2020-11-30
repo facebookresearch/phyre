@@ -51,6 +51,10 @@ To reproduce all baseline experiments in the paper, run:
 ./agents/train_all_baseline.sh
 ```
 
+## Download checkpoints
+
+We provide all 40 checkpoints for DQN model in the final splits. Do download them, run `bash download_dqn_ckps.sh`
+
 ## Analyzing Results
 Experimental results for each run are stored in `results` subfolder using the following folder structure:
 

@@ -32,6 +32,7 @@ MAIN_EVAL_SETUPS: Sequence[str] = (
     'ball_within_template',
     'two_balls_cross_template',
     'two_balls_within_template',
+    'ball_phyre_to_tools',
 )
 """List of valid evaluation setups for phyre.
 """
@@ -178,6 +179,30 @@ def ball_single_instance(max_per_tpl=10) -> EvalSetup:
 @_register_eval_setup_builder
 def ball_single_instance_tiny() -> EvalSetup:
     return ball_single_instance(1)
+
+
+@_register_eval_setup_builder
+def ball_phyre_to_tools(seed=1, dev_seed=None) -> EvalSetup:
+    """A set of train have train and PHYRE-B and val and test in TOOLS."""
+    tool_task_ids = get_task_ids_in_tier("VIRTUAL_TOOLS")
+    tasks_per_tpl = collections.defaultdict(list)
+    for task_id in tool_task_ids:
+        tasks_per_tpl[task_id.split(':')[0]].append(task_id)
+
+    key_order = phyre.util.stable_shuffle(tasks_per_tpl,
+                                          f'virtual_tools_{seed}')
+    if dev_seed is not None:
+        key_order = key_order[::2]
+    else:
+        key_order = key_order[1::2]
+    eval_ids = sum([tasks_per_tpl[k] for k in key_order], [])
+
+    # Always use train+val as train set from cross-dataset.
+    [(train_ids, _)] = _cross_template("BALL", seed=seed)
+    train_group = (tuple(train_ids), [tuple(eval_ids)])
+    eval_setup = []
+    eval_setup.append(train_group)
+    return eval_setup
 
 
 @_register_multi_tier_eval_setup_builder

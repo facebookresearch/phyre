@@ -29,7 +29,8 @@ ACTION_SEED = 42  # Default seed for the action space.
 PHYRE_CACHE_ENV = 'PHYRE_CACHE_DIR'
 ACTION_FILE_NAME = 'actions.pickle'
 CACHE_FILE_NAME = 'simulation_cache.gz'
-TIERS = ('ball', 'two_balls')  # Cache is computed of these tiers only.
+# Map: action_tier -> tuple of task tiers.
+TIERS = {'ball': ('BALL', 'VIRTUAL_TOOLS'), 'two_balls': 'TWO_BALS'}
 
 DEFAULT_NUM_ACTIONS = 100000
 
@@ -40,7 +41,7 @@ NOT_SOLVED = int(phyre.action_simulator.SimulationStatus.NOT_SOLVED)
 
 def get_default_100k_cache(tier: str) -> 'SimulationCache':
     """Get cache with results for simulation of 100k "default" actions."""
-    url = (f'https://dl.fbaipublicfiles.com/phyre/simulation_cache/v0'
+    url = (f'https://dl.fbaipublicfiles.com/phyre/simulation_cache/v1'
            f'/{DEFAULT_NUM_ACTIONS}/{tier}/{CACHE_FILE_NAME}')
 
     cache_dir = (phyre.simulation_cache.get_cache_folder(DEFAULT_NUM_ACTIONS) /

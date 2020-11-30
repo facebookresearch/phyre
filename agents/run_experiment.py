@@ -134,6 +134,8 @@ def get_finals_args(seed: int, use_test_split: bool,
 
     args.append(('random', ('--agent-type=random',)))
 
+    args.append(('object_prior', ('--agent-type=object_prior',)))
+
     dqn_load_from = get_output_dir(DQN_BASE_NAME, use_test_split, seed,
                                    eval_setup)
     if not dqn_load_from.exists():
