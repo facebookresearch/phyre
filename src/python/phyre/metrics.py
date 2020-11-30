@@ -91,7 +91,7 @@ def get_fold(eval_setup: str, seed: int
         raise ValueError(f'Unknown eval setup: {eval_setup}. Chose one of'
                          f' {",".join(EVAL_SETUP_BUILDERS)}')
     _, test_ids = _flatten_eval_setup(builder(seed))
-    train_ids, dev_ids = _flatten_eval_setup(builder(seed=seed, dev_seed=0))
+    train_ids, dev_ids = _flatten_eval_setup(builder(seed=seed, dev_seed=seed))
     return train_ids, dev_ids, test_ids
 
 
@@ -116,13 +116,6 @@ def _register_multi_tier_eval_setup_builder(func: Callable) -> Callable:
         EVAL_SETUP_BUILDERS[f'{tier}{func.__name__}'] = functools.partial(
             func, tier)
     return func
-
-
-def _stable_rng(task_id: str) -> float:
-    """Map a string to a number in [0, 1)."""
-    divider = 100000
-    return (int(hashlib.md5(task_id.encode('utf8')).hexdigest(), 16) %
-            divider) / divider
 
 
 def get_task_ids_in_tier(tier_name):
@@ -162,29 +155,6 @@ def _get_task_per_tpl(task_ids):
 
 
 @_register_eval_setup_builder
-def ball_debug() -> EvalSetup:
-    task_ids = get_task_ids_in_tier('ball')
-    tasks_per_tpl = _get_task_per_tpl(task_ids)
-    selected_tpl = min(tasks_per_tpl,
-                       key=lambda tpl: (-len(tasks_per_tpl[tpl]), tpl))
-    task_ids = tasks_per_tpl[selected_tpl]
-    train_size = int(len(task_ids) * 0.9)
-    eval_groups = (tuple(task_ids[train_size:]),)
-    train_set = tuple(task_ids[:train_size])
-    train_group = (train_set, eval_groups)
-    return [train_group]
-
-
-@_register_eval_setup_builder
-def ball_online() -> EvalSetup:
-    task_ids = get_task_ids_in_tier('ball')
-    eval_groups = (tuple(task_ids),)
-    train_set = ()
-    train_group = (train_set, eval_groups)
-    return [train_group]
-
-
-@_register_eval_setup_builder
 def ball_single_instance(max_per_tpl=10) -> EvalSetup:
     """Eval setup where each task instance is in separate eval group.
 
@@ -209,34 +179,6 @@ def ball_single_instance(max_per_tpl=10) -> EvalSetup:
 @_register_eval_setup_builder
 def ball_single_instance_tiny() -> EvalSetup:
     return ball_single_instance(1)
-
-
-@_register_eval_setup_builder
-def ball_single_instance_nano() -> EvalSetup:
-    task_ids = get_task_ids_in_tier('ball')
-    eval_groups = ((task_ids[0],),)
-    train_set = ()
-    train_group = (train_set, eval_groups)
-    eval_setup = [train_group]
-    return eval_setup
-
-
-@_register_eval_setup_builder
-def ball_single_template() -> EvalSetup:
-    """Eval setup where template tasks is a separate eval group."""
-    max_per_tpl = 10
-    task_ids = get_task_ids_in_tier('ball')
-    tasks_per_tpl = _get_task_per_tpl(task_ids)
-    eval_setup = []
-    for _, task_ids_group in sorted(tasks_per_tpl.items()):
-        task_ids_group = phyre.util.stable_shuffle(
-            task_ids_group, 'ball_online_ind_tasks')[:max_per_tpl]
-        eval_groups = (task_ids_group,)
-        train_set = ()
-        train_group = (train_set, eval_groups)
-        eval_setup.append(train_group)
-
-    return eval_setup
 
 
 @_register_eval_setup_builder
