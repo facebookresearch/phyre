@@ -1,6 +1,6 @@
 # OGRE dataset
 
-Contains code to reproduce agent baselines from  OGRE dataset (Add link!).
+Contains code to reproduce agent baselines from  OGRE dataset.
 
 ## Abstract
 
@@ -32,5 +32,5 @@ You can explore all the task in the [PHYRE player](https://player.phyre.ai/)
 Cross-dataset generalization is implemented as a generaralization tier in PHYRE framework referred to as `ball_phyre_to_tool`. Please see the [API documentaion](https://phyre.ai/docs/evaluator.html) for more details.
 
 We provide code that runs the baselines from PHYRE dataset and also newly added Object-Oriented Random Agent on cross-template and cross-dataset settings.
-To launch all evals simply run `python agents/run_experiments_ogre.py`.
-To train DQN models for the eval, see PHYRE's [README](README.md).
+To launch all evals download pre-trained checkpoints with `bash download_dqn_ckps.sh` and run `python agents/run_experiments_ogre.py`.
+See PHYRE's [README](README.md) for details of DQN training.
