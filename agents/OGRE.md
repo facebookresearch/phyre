@@ -1,6 +1,6 @@
 # OGRE dataset
 
-Contains code to reproduce agent baselines from  OGRE dataset.
+Contains code to reproduce agent baselines from  OGRE dataset. See the [paper](https://github.com/orlrworkshop/orlrworkshop.github.io/raw/master/pdf/ORLR_9.pdf) for details.
 
 ## Abstract
 
