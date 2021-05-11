@@ -398,14 +398,13 @@ def eval_loss(model, data, batch_size):
     with torch.no_grad():
         model.eval()
         for i in range(0, len(task_indices), batch_size):
-            batch_indices = task_indices[i:i + batch_size]
             batch_task_indices = task_indices[i:i + batch_size]
             batch_observations = observations[batch_task_indices]
             batch_actions = actions[i:i+ batch_size]
             batch_is_solved = is_solved[i:i + batch_size]
             loss = model.ce_loss(model(batch_observations, batch_actions),
                                  batch_is_solved)
-            losses.append(loss.item() * len(batch_indices))
+            losses.append(loss.item() * len(batch_task_indices))
     return sum(losses) / len(task_indices)
 
 
