@@ -81,8 +81,16 @@ If you use PHYRE in your experiments, please cite it:
 
 # Related projects
 
-[Solving Physics Puzzles by Reasoning about Paths](https://github.com/ndrwmlnk/PHYRE-Reasoning-about-Paths) is a new deep learning model for goal-driven tasks that require intuitive physical reasoning and intervention in the scene to achieve a desired end goal ([NeurIPS video presentation](https://youtu.be/X30QGeIEXRs);  [arXiv:2011.07357](https://arxiv.org/abs/2011.07357)).
+## Datasets
+
 
 [Virtual Tools](https://k-r-allen.github.io/tool-games/) is a similar project aiming to research the structure necessary to capture human-like reasoning in these sorts of physics puzzles.
 
 [ESPRIT](https://blog.einstein.ai/explaining-solutions-to-physical-reasoning-tasks/) is a framework based on PHYRE that connects physical reasoning and natural language explanations.
+
+## Models
+
+[Forward Prediction for Physical Reasoning](https://facebookresearch.github.io/phyre-fwd/) uses forward-prediction models improve the performance of physical-reasoning agents, particularly on complex tasks that involve many objects.
+
+[Solving Physics Puzzles by Reasoning about Paths](https://github.com/ndrwmlnk/PHYRE-Reasoning-about-Paths) is a model for goal-driven tasks that requires intuitive physical reasoning and intervention in the scene to achieve a desired end goal.
+
