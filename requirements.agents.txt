@@ -1,4 +1,4 @@
 torch
-Pillow==6.2.2
+Pillow==9.0.0
 torchvision
 tqdm==4.38.0
