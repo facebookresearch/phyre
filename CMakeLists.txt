@@ -7,6 +7,8 @@ project(simulator VERSION 0.0.1 LANGUAGES CXX)
 # For pybind11 to work on Linux.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+
 ##############################################
 # Declare dependencies
 find_package(Boost 1.58 REQUIRED COMPONENTS program_options filesystem thread)
