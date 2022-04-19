@@ -52,6 +52,7 @@ def create_balanced_eval_set(cache: phyre.SimulationCache, task_ids: TaskIds,
     task_ids = tuple(task_ids)
     data = cache.get_sample(task_ids)
     actions = data['actions']
+    # Array [num_tasks, num_actions].
     simulation_statuses = data['simulation_statuses']
 
     flat_statuses = simulation_statuses.reshape(-1)
