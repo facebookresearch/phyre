@@ -30,7 +30,7 @@ If you want to install phyre into existing conda environment or would like to us
 ```(bash)
 conda create --yes -n phyre python=3.6  # Skip if installing in an existing conda environment
 source activate phyre
-conda install -c forge sed nodejs thrift-cpp=0.11.0 wget pybind11=2.2.4 cmake boost=1.67.0 setuptools pip
+conda install -c conda-forge sed nodejs thrift-cpp=0.11.0 wget pybind11=2.2.4 cmake boost=1.67.0 setuptools pip --yes
 pip install matplotlib tqdm ipywidgets yapf==0.28.0
 
 git clone https://github.com/facebookresearch/phyre.git
