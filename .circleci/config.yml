@@ -42,7 +42,7 @@ jobs:
           conda info --envs
       - restore_cache:
           keys:
-            - v3-conda-<< parameters.py_version >>-linux-build
+            - v4-conda-<< parameters.py_version >>-linux-build
 
       # Create conda env with all deps.
       - run:
@@ -55,9 +55,9 @@ jobs:
            . ~/.bashrc
            conda activate phyre
 
-           conda install -c conda-forge sed nodejs=12 thrift-cpp=0.11.0 wget pybind11=2.7 cmake setuptools pip --yes
+           conda install -c conda-forge boost sed nodejs=12 thrift-cpp=0.11.0 wget pybind11=2.7 cmake setuptools pip --yes
       - save_cache:
-          key: v3-conda-<< parameters.py_version >>-linux-build
+          key: v4-conda-<< parameters.py_version >>-linux-build
           paths: /opt/conda/envs/phyre/
 
       # Restore node cache.
