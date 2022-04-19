@@ -164,7 +164,7 @@ target_compile_features(logger PRIVATE cxx_auto_type)
 # Task IO.
 add_library(task_io src/simulator/task_io)
 target_link_libraries(task_io PUBLIC thrift_task Boost::filesystem)
-target_compile_features(task_io PRIVATE cxx_auto_type)
+target_compile_features(task_io PRIVATE cxx_std_17)
 
 # The main library.
 add_library(
@@ -212,7 +212,7 @@ enable_testing()
 add_executable(task_validation_test src/simulator/tests/test_task_validation.cpp)
 target_link_libraries(task_validation_test task_io simulator_lib gtest_main)
 target_include_directories(task_validation_test PRIVATE src/simulator)
-target_compile_features(task_validation_test PRIVATE cxx_auto_type)
+target_compile_features(task_validation_test PRIVATE cxx_std_17)
 gtest_add_tests(TARGET task_validation_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Geometry.
@@ -233,7 +233,7 @@ gtest_add_tests(TARGET backend_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_executable(user_input_test src/simulator/tests/test_user_input.cpp)
 target_link_libraries(user_input_test simulator_lib task_io gtest_main)
 target_include_directories(user_input_test PRIVATE src/simulator)
-target_compile_features(user_input_test PRIVATE cxx_auto_type)
+target_compile_features(user_input_test PRIVATE cxx_std_17)
 gtest_add_tests(TARGET user_input_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Multi process simluation.
