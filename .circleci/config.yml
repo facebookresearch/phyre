@@ -84,7 +84,10 @@ jobs:
            pip install yapf==0.28.0
            yapf -r src/python/ agents/ scripts/ -p --diff
 
-  build-linux-wheel:
+  build-linux:
+    parameters:
+       py_version:
+         type: string
     docker:
       - image: ubuntu:bionic-20190612
     steps:
@@ -109,17 +112,20 @@ jobs:
           conda info --envs
       - restore_cache:
           keys:
-            - v1-conda-{{ checksum "env.yml" }}-linux-build
+            - v2-conda-<< parameters.py_version >>-linux-build
 
       # Create conda env with all deps.
       - run:
          command: |
            . /opt/conda/etc/profile.d/conda.sh
            if [[ ! -d "/opt/conda/envs/phyre/" ]]; then
-            conda env create -f env.yml
+            conda create --yes -n python python=<< parameters.py_version >>
            fi
+           source activate phyre
+           conda install -c conda-forge sed nodejs=12 thrift-cpp=0.11.0 wget pybind11=2.7 cmake boost=1.75 setuptools pip --yes
+           pip install matplotlib tqdm ipywidgets yapf==0.28.0
       - save_cache:
-          key: v1-conda-{{ checksum "env.yml" }}-linux-build
+          key: v2-conda-<< parameters.py_version >>-linux-build
           paths: /opt/conda/envs/phyre/
 
       # Restore node cache.
@@ -172,7 +178,7 @@ jobs:
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
-           conda create -n test python=3.6
+           conda create -n test python=<< parameters.py_version >>
            conda activate test
            pip install install/phyre-*.whl
            nosetests wheel-test/
@@ -180,113 +186,15 @@ jobs:
       # Store wheel to upload to PyPi
       - store_artifacts:
           path: install/
-
-  build-osx-wheel:
-    parameters:
-       xcode_version:
-         type: string
-    macos:
-      xcode: << parameters.xcode_version >>
-    steps:
-      - checkout
-      # Install conda.
-      - run:
-         command: |
-          export HOMEBREW_NO_AUTO_UPDATE=1
-          brew install wget
-          brew install md5sha1sum
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
-          bash ~/miniconda.sh -b -p $HOME/miniconda
-          export PATH="$HOME/miniconda/bin:$PATH"
-      - restore_cache:
-          keys:
-            - v1-conda-{{ checksum "env.yml" }}-osx-build
-
-      # Create conda env with all deps.
-      - run:
-         command: |
-           export PATH="$HOME/miniconda/bin:$PATH"
-           source $HOME/miniconda/bin/activate
-           if [[ ! -d "/opt/conda/envs/phyre/" ]]; then
-            conda env create -f env.yml
-           fi
-      - save_cache:
-          key: v1-conda-{{ checksum "env.yml" }}-osx-build
-          paths: /opt/conda/envs/phyre/
-
-      # Restore node cache.
-      - restore_cache:
-          keys:
-            - v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-osx-build
-
-      # Install phyre.
-      - run:
-         command: |
-           export PATH="$HOME/miniconda/bin:$PATH"
-           source $HOME/miniconda/bin/activate
-           conda init bash
-           conda activate phyre
-           pip install -e src/python
-
-      # Save node package cache.
-      - save_cache:
-          key: v1-npm-{{ checksum "src/viz/package.json" }}-{{ checksum "src/viz/package-lock.json" }}-osx-build
-          paths: src/viz/node_modules/
-
-      # Run tests.
-      - run:
-         command: |
-           export PATH="$HOME/miniconda/bin:$PATH"
-           source $HOME/miniconda/bin/activate
-           conda activate phyre
-           make test
-
-      # Make wheel
-      - run:
-         command: |
-           export PATH="$HOME/miniconda/bin:$PATH"
-           source $HOME/miniconda/bin/activate
-           conda activate phyre
-           cd src/python/ && python3 setup.py sdist bdist_wheel --plat-name macosx_$(python -c "import platform; print('_'.join(platform.mac_ver()[0].split('.')[:2]))")_x86_64
-
-      # Test wheel in new empty conda env
-      - run:
-         command: |
-
-           export PATH="$HOME/miniconda/bin:$PATH"
-           source $HOME/miniconda/bin/activate
-           mkdir install
-           cp src/python/dist/phyre-?.?.?-cp36-*.whl install/
-           ls -l install/
-           cp -r src/python/phyre/tests/ wheel-test/
-           rm -r src/
-           conda remove -n test --all
-           conda create -y -n test python=3.6
-           conda activate test
-           pip install install/phyre-*.whl
-           nosetests wheel-test/
-
-      # Store wheel to upload to PyPi
-      - store_artifacts:
-          path: install/
-
-# Putting all together
+          
 workflows:
   version: 2.1
   build-phyre:
     jobs:
       - yapf-formatting
       - build
-      #Build the wheels if branch names starts with release
-      - build-linux-wheel:
-          filters:
-            branches:
-              only: /^release.*/
-      - build-osx-wheel:
+      - build-linux:
           matrix:
             parameters:
-              xcode_version: ["10.3.0"]
-          filters:
-            branches:
-              only: /^release.*/
+              py_version: ["3.8", "3.9"]
 

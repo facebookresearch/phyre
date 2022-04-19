@@ -25,7 +25,7 @@ source activate phyre
 pip install -e src/python
 ```
 
-If you want to install phyre into existing conda environment or would like to use a different version of python than 3.6, use the following commands:
+If you want to install phyre into existing conda environment or would like to use a different version of python than 3.6, you can install the required dependecies manually. Below is an example for python 3.9. Note, that for different version of python you may need to change the version of the pybind and boost pachages.
 
 ```(bash)
 conda create --yes -n phyre python=3.9
