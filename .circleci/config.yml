@@ -126,6 +126,7 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            conda activate phyre
+           pip install install.<< parameters.py_version >>/phyre-*.whl
            pip install -r requirements.agents.txt
            python agents/train.py \
               --output-dir=/tmp/agent_training \
