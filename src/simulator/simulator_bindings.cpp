@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <chrono>
+#include <memory>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <chrono>
-#include <memory>
 #include <vector>
 
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -41,19 +41,21 @@ namespace py = pybind11;
 
 namespace {
 
-template <class T>
-T deserialize(const std::vector<unsigned char> &serialized) {
+template <class T> T deserialize(const py::bytes &serializedBytes) {
+
+  py::buffer_info info(py::buffer(serializedBytes).request());
+  const unsigned char *data = reinterpret_cast<const unsigned char *>(info.ptr);
+  size_t length = static_cast<size_t>(info.size);
+
   std::shared_ptr<TMemoryBuffer> memoryBuffer(new TMemoryBuffer());
   std::unique_ptr<TBinaryProtocol> protocol(new TBinaryProtocol(memoryBuffer));
-  memoryBuffer->resetBuffer(const_cast<unsigned char *>(serialized.data()),
-                            serialized.size());
+  memoryBuffer->resetBuffer(const_cast<unsigned char *>(data), length);
   T object;
   object.read(protocol.get());
   return object;
 }
 
-template <class T>
-py::bytes serialize(const T &object) {
+template <class T> py::bytes serialize(const T &object) {
   std::shared_ptr<TMemoryBuffer> memoryBuffer(new TMemoryBuffer());
   std::unique_ptr<TBinaryProtocol> protocol(new TBinaryProtocol(memoryBuffer));
   object.write(protocol.get());
@@ -64,10 +66,10 @@ py::bytes serialize(const T &object) {
   return py::bytes(reinterpret_cast<const char *>(buffer), sz);
 }
 
-UserInput buildUserInputObject(
-    const py::array_t<int32_t> &points,
-    const std::vector<float> &rectangulars_vertices_flatten,
-    const std::vector<float> &balls_flatten) {
+UserInput
+buildUserInputObject(const py::array_t<int32_t> &points,
+                     const std::vector<float> &rectangulars_vertices_flatten,
+                     const std::vector<float> &balls_flatten) {
   if (points.ndim() != 2) {
     throw std::runtime_error("Number of dimensions must be two");
   }
@@ -142,10 +144,9 @@ bool hadSimulationOcclusions(const TaskSimulation &simulation) {
              : scenes[0].user_input_status == UserInputStatus::HAD_OCCLUSIONS;
 }
 
-auto magic_ponies(const std::vector<unsigned char> &serialized_task,
-                  const UserInput &user_input, bool keep_space_around_bodies,
-                  int steps, int stride, bool need_images,
-                  bool need_featurized_objects) {
+auto magic_ponies(const py::bytes &serialized_task, const UserInput &user_input,
+                  bool keep_space_around_bodies, int steps, int stride,
+                  bool need_images, bool need_featurized_objects) {
   SimpleTimer timer;
   Task task = deserialize<Task>(serialized_task);
   addUserInputToScene(user_input, keep_space_around_bodies,
@@ -192,17 +193,17 @@ auto magic_ponies(const std::vector<unsigned char> &serialized_task,
     delete[] foo;
   });
   auto packedImagesArray =
-      py::array_t<uint8_t>({numImagesTotal * imageSize},  // shape
+      py::array_t<uint8_t>({numImagesTotal * imageSize}, // shape
                            {sizeof(uint8_t)}, packedImages, freeImagesWhenDone);
   auto packedObjectsArray = py::array_t<float>(
-      {numScenesTotal * numSceneObjects * kObjectFeatureSize},  // shape
+      {numScenesTotal * numSceneObjects * kObjectFeatureSize}, // shape
       {sizeof(float)}, packedVectorizedBodies, freeObjectsWhenDone);
   const double pack_seconds = timer.GetSeconds();
   return std::make_tuple(isSolved, hadOcclusions, packedImagesArray,
                          packedObjectsArray, numSceneObjects,
                          simulation_seconds, pack_seconds);
 }
-}  // namespace
+} // namespace
 
 PYBIND11_MODULE(simulator_bindings, m) {
   m.doc() = "Task simulation and validation library";
@@ -215,7 +216,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "simulate_scene",
-      [](const std::vector<unsigned char> &scene, int steps) {
+      [](const py::bytes &scene, int steps) {
         const std::vector<Scene> scenes =
             simulateScene(deserialize<Scene>(scene), steps);
         std::vector<py::bytes> serializedScenes(scenes.size());
@@ -228,9 +229,9 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "add_user_input_to_scene",
-      [](const std::vector<unsigned char> &scene_serialized,
-         const std::vector<unsigned char> &user_input_serialized,
-         bool keep_space_around_bodies, bool allow_occlusions) {
+      [](const py::bytes &scene_serialized,
+         const py::bytes &user_input_serialized, bool keep_space_around_bodies,
+         bool allow_occlusions) {
         Scene scene = deserialize<Scene>(scene_serialized);
         const auto user_input = deserialize<UserInput>(user_input_serialized);
         addUserInputToScene(user_input, keep_space_around_bodies,
@@ -241,8 +242,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "check_for_occlusions",
-      [](const std::vector<unsigned char> &serialized_task,
-         py::array_t<int32_t> points,
+      [](const py::bytes &serialized_task, py::array_t<int32_t> points,
          const std::vector<float> &rectangulars_vertices_flatten,
          const std::vector<float> &balls_flatten,
          bool keep_space_around_bodies) {
@@ -257,8 +257,8 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "check_for_occlusions_general",
-      [](const std::vector<unsigned char> &serialized_task,
-         const std::vector<unsigned char> &serialized_user_input,
+      [](const py::bytes &serialized_task,
+         const py::bytes &serialized_user_input,
          bool keep_space_around_bodies) {
         const auto user_input = deserialize<UserInput>(serialized_user_input);
         Task task = deserialize<Task>(serialized_task);
@@ -270,7 +270,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "simulate_task",
-      [](const std::vector<unsigned char> &task, int steps, int stride) {
+      [](const py::bytes &task, int steps, int stride) {
         const TaskSimulation results =
             simulateTask(deserialize<Task>(task), steps, stride);
         return serialize(results);
@@ -279,8 +279,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "magic_ponies",
-      [](const std::vector<unsigned char> &serialized_task,
-         py::array_t<int32_t> points,
+      [](const py::bytes &serialized_task, py::array_t<int32_t> points,
          const std::vector<float> &rectangulars_vertices_flatten,
          const std::vector<float> &balls_flatten, bool keep_space_around_bodies,
          int steps, int stride, bool need_images,
@@ -300,8 +299,8 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "magic_ponies_general",
-      [](const std::vector<unsigned char> &serialized_task,
-         const std::vector<unsigned char> &serialized_user_input,
+      [](const py::bytes &serialized_task,
+         const py::bytes &serialized_user_input,
 
          bool keep_space_around_bodies, int steps, int stride, bool need_images,
          bool need_featurized_objects) {
@@ -319,7 +318,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "render",
-      [](const std::vector<unsigned char> &scene) {
+      [](const py::bytes &scene) {
         const Scene sceneObj = deserialize<Scene>(scene);
         std::vector<uint8_t> pixels(sceneObj.width * sceneObj.height);
         renderTo(sceneObj, pixels.data());
@@ -329,7 +328,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "featurize_scene",
-      [](const std::vector<unsigned char> &scene) {
+      [](const py::bytes &scene) {
         const Scene sceneObj = deserialize<Scene>(scene);
         int numObjects = getNumObjectsInScene(sceneObj);
         std::vector<float> objectsFeaturized(numObjects * kObjectFeatureSize);

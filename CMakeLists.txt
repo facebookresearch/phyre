@@ -47,7 +47,7 @@ file(
   ${BOX2D_SOURCE_ROOT}/Box2D/Box2D/*.cpp
   )
 add_library(Box2D ${BOX2D_SOURCE_FILES})
-target_compile_features(Box2D PRIVATE cxx_auto_type)
+target_compile_features(Box2D PRIVATE cxx_std_17)
 target_include_directories(Box2D PUBLIC ${BOX2D_SOURCE_ROOT}/Box2D)
 
 # Box2d Convex Hull
@@ -58,7 +58,7 @@ file(
   third-party/Box2D/Contributions/Utilities/ConvexDecomposition/*.cpp
   )
 add_library(Box2DConvexHull ${BOX2D_CH_SOURCE_FILES})
-target_compile_features(Box2DConvexHull PRIVATE cxx_auto_type)
+target_compile_features(Box2DConvexHull PRIVATE cxx_std_17)
 target_include_directories(
   Box2DConvexHull
   PRIVATE
@@ -153,13 +153,13 @@ add_custom_target(thrift-gen-js ALL DEPENDS gen-js/TaskService.js)
 add_library(thrift_task ${THRIFT_GEN_CPP_FILES})
 target_link_libraries(thrift_task PUBLIC thrift)
 target_include_directories(thrift_task PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_features(thrift_task PRIVATE cxx_auto_type)
+target_compile_features(thrift_task PRIVATE cxx_std_17)
 
 # Logger lib.
 add_library(logger src/simulator/utils/logger)
 target_link_libraries(logger PUBLIC thrift_task)
 target_include_directories(logger PUBLIC src/simulator/utils)  # Propagage include dirs. # FIXME: use relative to root pathes instead.
-target_compile_features(logger PRIVATE cxx_auto_type)
+target_compile_features(logger PRIVATE cxx_std_17)
 
 # Task IO.
 add_library(task_io src/simulator/task_io)
@@ -184,22 +184,22 @@ target_link_libraries(
   PRIVATE Box2DConvexHull clip2tri-static logger)
 
 target_include_directories(simulator_lib PUBLIC ${CLIP2TRI_SOURCE_ROOT}/clipper)
-target_compile_features(simulator_lib PRIVATE cxx_auto_type)
+target_compile_features(simulator_lib PRIVATE cxx_std_17)
 
 # # Threading benchmark binary.
 # add_executable(benchmark_box2d src/simulator/benchmark_box2d)
-# target_compile_features(benchmark_box2d PRIVATE cxx_auto_type)
+# target_compile_features(benchmark_box2d PRIVATE cxx_std_17)
 # target_link_libraries(benchmark_box2d PRIVATE simulator_lib Threads::Threads)
 #
 # # User input vectorization and simulation benchmark.
 # add_executable(benchmark_user_input_box2d src/simulator/benchmark_user_input_box2d)
-# target_compile_features(benchmark_user_input_box2d PRIVATE cxx_auto_type)
+# target_compile_features(benchmark_user_input_box2d PRIVATE cxx_std_17)
 # target_link_libraries(benchmark_user_input_box2d PRIVATE simulator_lib task_io)
 
 # Pybind11 binding.
 pybind11_add_module(simulator_bindings src/simulator/simulator_bindings)
 target_link_libraries(simulator_bindings PRIVATE thrift_task simulator_lib)
-target_compile_features(simulator_bindings PRIVATE cxx_std_14)
+target_compile_features(simulator_bindings PRIVATE cxx_std_17)
 
 
 ##########################################
@@ -219,14 +219,14 @@ gtest_add_tests(TARGET task_validation_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR
 add_executable(geometry_test src/simulator/tests/test_geometry.cpp)
 target_link_libraries(geometry_test simulator_lib gtest_main)
 target_include_directories(geometry_test PRIVATE src/simulator)
-target_compile_features(geometry_test PRIVATE cxx_auto_type)
+target_compile_features(geometry_test PRIVATE cxx_std_17)
 gtest_add_tests(TARGET geometry_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Simulation + box2d-and-back-conversion.
 add_executable(backend_test src/simulator/tests/test_backend.cpp)
 target_link_libraries(backend_test simulator_lib logger task_io gtest_main)
 target_include_directories(backend_test PRIVATE src/simulator)
-target_compile_features(backend_test PRIVATE cxx_auto_type)
+target_compile_features(backend_test PRIVATE cxx_std_17)
 gtest_add_tests(TARGET backend_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # User input vectorization.
@@ -240,5 +240,5 @@ gtest_add_tests(TARGET user_input_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_executable(parallel_simulation_test src/simulator/tests/test_parallel_simulation.cpp)
 target_link_libraries(parallel_simulation_test simulator_lib gtest_main)
 target_include_directories(parallel_simulation_test PRIVATE src/simulator)
-target_compile_features(parallel_simulation_test PRIVATE cxx_auto_type)
+target_compile_features(parallel_simulation_test PRIVATE cxx_std_17)
 gtest_add_tests(TARGET parallel_simulation_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
