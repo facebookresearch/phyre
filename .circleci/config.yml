@@ -137,7 +137,7 @@ jobs:
           
   build-canonical:
     docker:
-      - image: continuumio/miniconda3:4.6.14
+      - image: continuumio/miniconda3:4.10.3p1
     steps:
       - checkout
 
