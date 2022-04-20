@@ -16,11 +16,22 @@
 set -e
 set -u
 
+
+branch=$1
+
+if [ -z "$branch" ]; then
+    echo "Usage: $0 <branch>"
+    exit 1
+fi
+
 DST=$HOME/src/phyre_building_root
 module load anaconda3/2020.11
 
 
 for version in 3.6 3.7 3.8 3.9; do
+    echo "############################"
+    echo "###### v=${version} ##################"
+    echo "############################"
     vdst=$DST/py$version
     env_name="phyre_tmp_$version"
     if [ -d "$HOME/.conda/envs/$env_name" ]; then
@@ -46,8 +57,8 @@ for version in 3.6 3.7 3.8 3.9; do
         git clone https://github.com/facebookresearch/phyre.git
     fi
     cd phyre
-    git checkout readme
-    git pull
+    git fetch
+    git reset --hard origin/$branch
     pip install -e src/python
     rm -rf src/python/dist
     cd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name manylinux1_x86_64 --python-tag cp${version//./}
