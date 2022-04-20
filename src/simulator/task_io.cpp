@@ -15,8 +15,8 @@
 
 #include <fcntl.h>
 
-#include <filesystem>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -41,8 +41,10 @@ const std::string kTaskNameTemplate =
 }  // namespace
 
 std::filesystem::path getTasksPath(const char* taskFolder) {
-  const std::filesystem::path task_folder = std::filesystem::absolute(std::filesystem::path(taskFolder));
-  if (!std::filesystem::exists(task_folder) || !std::filesystem::exists(task_folder)) {
+  const std::filesystem::path task_folder =
+      std::filesystem::absolute(std::filesystem::path(taskFolder));
+  if (!std::filesystem::exists(task_folder) ||
+      !std::filesystem::exists(task_folder)) {
     throw std::runtime_error(
         "task_io is misconfigured. Make sure it's run from the root of the "
         "project,"
@@ -55,7 +57,7 @@ std::vector<int32_t> listTasks(const char* taskFolder) {
   const auto task_folder = getTasksPath(taskFolder);
   std::vector<int32_t> task_ids;
   std::cout << "Listing " << task_folder.native() << std::endl;
-  for (const auto & entry : std::filesystem::directory_iterator(task_folder)) {
+  for (const auto& entry : std::filesystem::directory_iterator(task_folder)) {
     if (entry.is_regular_file()) {
       std::cout << "Found " << entry.path() << std::endl;
       std::string s = entry.path().filename().native();

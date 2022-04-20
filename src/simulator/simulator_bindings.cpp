@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <chrono>
-#include <memory>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <chrono>
+#include <memory>
 #include <vector>
 
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -41,8 +41,8 @@ namespace py = pybind11;
 
 namespace {
 
-template <class T> T deserialize(const py::bytes &serializedBytes) {
-
+template <class T>
+T deserialize(const py::bytes &serializedBytes) {
   py::buffer_info info(py::buffer(serializedBytes).request());
   const unsigned char *data = reinterpret_cast<const unsigned char *>(info.ptr);
   size_t length = static_cast<size_t>(info.size);
@@ -55,7 +55,8 @@ template <class T> T deserialize(const py::bytes &serializedBytes) {
   return object;
 }
 
-template <class T> py::bytes serialize(const T &object) {
+template <class T>
+py::bytes serialize(const T &object) {
   std::shared_ptr<TMemoryBuffer> memoryBuffer(new TMemoryBuffer());
   std::unique_ptr<TBinaryProtocol> protocol(new TBinaryProtocol(memoryBuffer));
   object.write(protocol.get());
@@ -66,10 +67,10 @@ template <class T> py::bytes serialize(const T &object) {
   return py::bytes(reinterpret_cast<const char *>(buffer), sz);
 }
 
-UserInput
-buildUserInputObject(const py::array_t<int32_t> &points,
-                     const std::vector<float> &rectangulars_vertices_flatten,
-                     const std::vector<float> &balls_flatten) {
+UserInput buildUserInputObject(
+    const py::array_t<int32_t> &points,
+    const std::vector<float> &rectangulars_vertices_flatten,
+    const std::vector<float> &balls_flatten) {
   if (points.ndim() != 2) {
     throw std::runtime_error("Number of dimensions must be two");
   }
@@ -193,17 +194,17 @@ auto magic_ponies(const py::bytes &serialized_task, const UserInput &user_input,
     delete[] foo;
   });
   auto packedImagesArray =
-      py::array_t<uint8_t>({numImagesTotal * imageSize}, // shape
+      py::array_t<uint8_t>({numImagesTotal * imageSize},  // shape
                            {sizeof(uint8_t)}, packedImages, freeImagesWhenDone);
   auto packedObjectsArray = py::array_t<float>(
-      {numScenesTotal * numSceneObjects * kObjectFeatureSize}, // shape
+      {numScenesTotal * numSceneObjects * kObjectFeatureSize},  // shape
       {sizeof(float)}, packedVectorizedBodies, freeObjectsWhenDone);
   const double pack_seconds = timer.GetSeconds();
   return std::make_tuple(isSolved, hadOcclusions, packedImagesArray,
                          packedObjectsArray, numSceneObjects,
                          simulation_seconds, pack_seconds);
 }
-} // namespace
+}  // namespace
 
 PYBIND11_MODULE(simulator_bindings, m) {
   m.doc() = "Task simulation and validation library";
