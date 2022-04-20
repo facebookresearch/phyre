@@ -104,7 +104,7 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            mkdir install
-           cp src/python/dist/phyre-?.?.?-cp36-none-manylinux1_x86_64.whl install/
+           cp src/python/dist/phyre-?.?.?-cp3?-none-manylinux1_x86_64.whl install/
            ls -l install/
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
