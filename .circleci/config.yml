@@ -167,6 +167,11 @@ jobs:
            . ~/.bashrc
            conda activate phyre
            conda uninstall boost boost-cpp --yes
+           # Some weird compatibility artfact.
+           cp third-party/Box2D/Contributions/Utilities/ConvexDecomposition/b2Polygon.h{,.orig}
+           echo '#include <stdio.h>' > third-party/Box2D/Contributions/Utilities/ConvexDecomposition/b2Polygon.h
+           cat third-party/Box2D/Contributions/Utilities/ConvexDecomposition/b2Polygon.h.orig >> third-party/Box2D/Contributions/Utilities/ConvexDecomposition/b2Polygon.h
+'
            pip install -e src/python
       # Run tests.
       - run:
