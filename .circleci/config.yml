@@ -97,7 +97,7 @@ jobs:
            . ~/.bashrc
            conda activate phyre
            version="<< parameters.py_version >>"
-           pushd src/python/ && python setup.py sdist bdist_wheel --plat-name manylinux1_x86_64  --python-tag py${version//./}
+           pushd src/python/ && python setup.py sdist bdist_wheel --plat-name manylinux1_x86_64  --python-tag cp${version//./}
 
       # Test wheel in empty conda env
       - run:
