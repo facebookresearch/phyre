@@ -42,11 +42,14 @@ namespace py = pybind11;
 namespace {
 
 template <class T>
-T deserialize(const std::vector<unsigned char> &serialized) {
+T deserialize(const py::bytes &serializedBytes) {
+  py::buffer_info info(py::buffer(serializedBytes).request());
+  const unsigned char *data = reinterpret_cast<const unsigned char *>(info.ptr);
+  size_t length = static_cast<size_t>(info.size);
+
   std::shared_ptr<TMemoryBuffer> memoryBuffer(new TMemoryBuffer());
   std::unique_ptr<TBinaryProtocol> protocol(new TBinaryProtocol(memoryBuffer));
-  memoryBuffer->resetBuffer(const_cast<unsigned char *>(serialized.data()),
-                            serialized.size());
+  memoryBuffer->resetBuffer(const_cast<unsigned char *>(data), length);
   T object;
   object.read(protocol.get());
   return object;
@@ -142,10 +145,9 @@ bool hadSimulationOcclusions(const TaskSimulation &simulation) {
              : scenes[0].user_input_status == UserInputStatus::HAD_OCCLUSIONS;
 }
 
-auto magic_ponies(const std::vector<unsigned char> &serialized_task,
-                  const UserInput &user_input, bool keep_space_around_bodies,
-                  int steps, int stride, bool need_images,
-                  bool need_featurized_objects) {
+auto magic_ponies(const py::bytes &serialized_task, const UserInput &user_input,
+                  bool keep_space_around_bodies, int steps, int stride,
+                  bool need_images, bool need_featurized_objects) {
   SimpleTimer timer;
   Task task = deserialize<Task>(serialized_task);
   addUserInputToScene(user_input, keep_space_around_bodies,
@@ -215,7 +217,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "simulate_scene",
-      [](const std::vector<unsigned char> &scene, int steps) {
+      [](const py::bytes &scene, int steps) {
         const std::vector<Scene> scenes =
             simulateScene(deserialize<Scene>(scene), steps);
         std::vector<py::bytes> serializedScenes(scenes.size());
@@ -228,9 +230,9 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "add_user_input_to_scene",
-      [](const std::vector<unsigned char> &scene_serialized,
-         const std::vector<unsigned char> &user_input_serialized,
-         bool keep_space_around_bodies, bool allow_occlusions) {
+      [](const py::bytes &scene_serialized,
+         const py::bytes &user_input_serialized, bool keep_space_around_bodies,
+         bool allow_occlusions) {
         Scene scene = deserialize<Scene>(scene_serialized);
         const auto user_input = deserialize<UserInput>(user_input_serialized);
         addUserInputToScene(user_input, keep_space_around_bodies,
@@ -241,8 +243,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "check_for_occlusions",
-      [](const std::vector<unsigned char> &serialized_task,
-         py::array_t<int32_t> points,
+      [](const py::bytes &serialized_task, py::array_t<int32_t> points,
          const std::vector<float> &rectangulars_vertices_flatten,
          const std::vector<float> &balls_flatten,
          bool keep_space_around_bodies) {
@@ -257,8 +258,8 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "check_for_occlusions_general",
-      [](const std::vector<unsigned char> &serialized_task,
-         const std::vector<unsigned char> &serialized_user_input,
+      [](const py::bytes &serialized_task,
+         const py::bytes &serialized_user_input,
          bool keep_space_around_bodies) {
         const auto user_input = deserialize<UserInput>(serialized_user_input);
         Task task = deserialize<Task>(serialized_task);
@@ -270,7 +271,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "simulate_task",
-      [](const std::vector<unsigned char> &task, int steps, int stride) {
+      [](const py::bytes &task, int steps, int stride) {
         const TaskSimulation results =
             simulateTask(deserialize<Task>(task), steps, stride);
         return serialize(results);
@@ -279,8 +280,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "magic_ponies",
-      [](const std::vector<unsigned char> &serialized_task,
-         py::array_t<int32_t> points,
+      [](const py::bytes &serialized_task, py::array_t<int32_t> points,
          const std::vector<float> &rectangulars_vertices_flatten,
          const std::vector<float> &balls_flatten, bool keep_space_around_bodies,
          int steps, int stride, bool need_images,
@@ -300,8 +300,8 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "magic_ponies_general",
-      [](const std::vector<unsigned char> &serialized_task,
-         const std::vector<unsigned char> &serialized_user_input,
+      [](const py::bytes &serialized_task,
+         const py::bytes &serialized_user_input,
 
          bool keep_space_around_bodies, int steps, int stride, bool need_images,
          bool need_featurized_objects) {
@@ -319,7 +319,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "render",
-      [](const std::vector<unsigned char> &scene) {
+      [](const py::bytes &scene) {
         const Scene sceneObj = deserialize<Scene>(scene);
         std::vector<uint8_t> pixels(sceneObj.width * sceneObj.height);
         renderTo(sceneObj, pixels.data());
@@ -329,7 +329,7 @@ PYBIND11_MODULE(simulator_bindings, m) {
 
   m.def(
       "featurize_scene",
-      [](const std::vector<unsigned char> &scene) {
+      [](const py::bytes &scene) {
         const Scene sceneObj = deserialize<Scene>(scene);
         int numObjects = getNumObjectsInScene(sceneObj);
         std::vector<float> objectsFeaturized(numObjects * kObjectFeatureSize);

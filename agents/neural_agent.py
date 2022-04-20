@@ -52,6 +52,7 @@ def create_balanced_eval_set(cache: phyre.SimulationCache, task_ids: TaskIds,
     task_ids = tuple(task_ids)
     data = cache.get_sample(task_ids)
     actions = data['actions']
+    # Array [num_tasks, num_actions].
     simulation_statuses = data['simulation_statuses']
 
     flat_statuses = simulation_statuses.reshape(-1)
@@ -68,11 +69,12 @@ def create_balanced_eval_set(cache: phyre.SimulationCache, task_ids: TaskIds,
     all_indices = np.concatenate([positive_indices, negative_indices])
     selected_actions = torch.FloatTensor(actions[all_indices % len(actions)])
     is_solved = torch.LongTensor(flat_statuses[all_indices].astype('int')) > 0
-    
+
     all_task_indices = np.arange(len(task_ids)).repeat(actions.shape[0])
     positive_task_indices = all_task_indices[positive_indices]
     negative_task_indices = all_task_indices[negative_indices]
-    task_indices = torch.LongTensor(np.concatenate([positive_task_indices, negative_task_indices]))
+    task_indices = torch.LongTensor(
+        np.concatenate([positive_task_indices, negative_task_indices]))
 
     simulator = phyre.initialize_simulator(task_ids, tier)
     observations = torch.LongTensor(simulator.initial_scenes)
@@ -400,7 +402,7 @@ def eval_loss(model, data, batch_size):
         for i in range(0, len(task_indices), batch_size):
             batch_task_indices = task_indices[i:i + batch_size]
             batch_observations = observations[batch_task_indices]
-            batch_actions = actions[i:i+ batch_size]
+            batch_actions = actions[i:i + batch_size]
             batch_is_solved = is_solved[i:i + batch_size]
             loss = model.ce_loss(model(batch_observations, batch_actions),
                                  batch_is_solved)

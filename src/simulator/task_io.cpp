@@ -16,6 +16,7 @@
 #include <fcntl.h>
 
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -29,8 +30,6 @@
 #include "gen-cpp/task_types.h"
 #include "utils/logger.h"
 
-namespace fs = boost::filesystem;
-
 namespace {
 using apache::thrift::protocol::TBinaryProtocol;
 using apache::thrift::transport::TFDTransport;
@@ -41,9 +40,11 @@ const std::string kTaskNameTemplate =
     kTaskNameLeftTemplate + "%05d" + kTaskNameRightTemplate;
 }  // namespace
 
-fs::path getTasksPath(const char* taskFolder) {
-  const fs::path task_folder = fs::system_complete(fs::path(taskFolder));
-  if (!fs::exists(task_folder) || !fs::is_directory(task_folder)) {
+std::filesystem::path getTasksPath(const char* taskFolder) {
+  const std::filesystem::path task_folder =
+      std::filesystem::absolute(std::filesystem::path(taskFolder));
+  if (!std::filesystem::exists(task_folder) ||
+      !std::filesystem::exists(task_folder)) {
     throw std::runtime_error(
         "task_io is misconfigured. Make sure it's run from the root of the "
         "project,"
@@ -53,20 +54,19 @@ fs::path getTasksPath(const char* taskFolder) {
 }
 
 std::vector<int32_t> listTasks(const char* taskFolder) {
-  const fs::path task_folder = getTasksPath(taskFolder);
-  const fs::directory_iterator end_iter;
+  const auto task_folder = getTasksPath(taskFolder);
   std::vector<int32_t> task_ids;
   std::cout << "Listing " << task_folder.native() << std::endl;
-  for (fs::directory_iterator itr(task_folder); itr != end_iter; ++itr) {
-    if (fs::is_regular_file(itr->status())) {
-      std::cout << "Found " << itr->path() << std::endl;
-      std::string s = itr->path().filename().native();
+  for (const auto& entry : std::filesystem::directory_iterator(task_folder)) {
+    if (entry.is_regular_file()) {
+      std::cout << "Found " << entry.path() << std::endl;
+      std::string s = entry.path().filename().native();
       s = s.substr(kTaskNameLeftTemplate.size());
       s = s.substr(0, s.size() - kTaskNameRightTemplate.size());
       task_ids.push_back(std::stoi(s));
       std::cout << "Task id: " << std::stoi(s) << std::endl;
     } else {
-      std::cout << "Skipping " << itr->path() << std::endl;
+      std::cout << "Skipping " << entry.path() << std::endl;
     }
   }
   return task_ids;
@@ -79,15 +79,15 @@ task::Task getTaskFromId(const int32_t pTaskId, const char* taskFolder) {
     snprintf(buff, sizeof(buff), kTaskNameTemplate.c_str(), pTaskId);
     filename = buff;
   }
-  const fs::path task_folder = getTasksPath(taskFolder);
-  const fs::path file_path = task_folder / filename;
+  const auto task_folder = getTasksPath(taskFolder);
+  const auto file_path = task_folder / filename;
 
   return getTaskFromPath(file_path.native());
 }
 
 task::Task getTaskFromPath(const std::string& file_path) {
   std::cout << "Reading " << file_path << std::endl;
-  if (!fs::exists(file_path)) {
+  if (!std::filesystem::exists(file_path)) {
     shared::Error_message msg;
     msg.__set_errorMsg("File doesn't not exist");
     throw shared::Error_message(msg);

@@ -14,17 +14,16 @@
 #ifndef TASK_IO_H
 #define TASK_IO_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
 #include "gen-cpp/shared_types.h"
 #include "gen-cpp/task_types.h"
 
-#include "boost/filesystem.hpp"
-
 constexpr char kTaskFolder[] = "data/generated_tasks";
 
-boost::filesystem::path getTasksPath(const char* taskFolder);
+std::filesystem::path getTasksPath(const char* taskFolder);
 
 std::vector<int32_t> listTasks(const char* taskFolder = kTaskFolder);
 
