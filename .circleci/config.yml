@@ -103,20 +103,21 @@ jobs:
          command: |
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
-           mkdir install
-           cp src/python/dist/phyre-?.?.?-cp3?-none-manylinux1_x86_64.whl install/
-           ls -l install/
+           rm -rf install.<< parameters.py_version >>
+           mkdir -p install.<< parameters.py_version >>
+           cp src/python/dist/phyre-?.?.?-cp3?-none-manylinux1_x86_64.whl install.<< parameters.py_version >>
+           ls -l install.<< parameters.py_version >>
            cp -r src/python/phyre/tests/ wheel-test/
            rm -r src/
            conda remove -n test --all
            conda create -n test python=<< parameters.py_version >>
            conda activate test
-           pip install install/phyre-*.whl
+           pip install install.<< parameters.py_version >>/phyre-*.whl
            nosetests wheel-test/
 
       # Store wheel to upload to PyPi
       - store_artifacts:
-          path: install/
+          path: install.<< parameters.py_version >>
 
       # Train a simple agent from README.
       - run:
