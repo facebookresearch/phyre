@@ -121,6 +121,7 @@ jobs:
       # Train a simple agent from README.
       - run:
          command: |
+           . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            conda activate phyre
            pip install -r requirements.agents.txt
