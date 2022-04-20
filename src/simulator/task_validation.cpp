@@ -13,7 +13,7 @@
 // limitations under the License.
 #include "task_validation.h"
 #include <math.h>
-#include <exception>
+#include <stdexcept>
 #include "Box2D/Box2D.h"
 #include "geometry.h"
 #include "image_to_box2d.h"
