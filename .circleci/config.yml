@@ -96,7 +96,7 @@ jobs:
            . /opt/conda/etc/profile.d/conda.sh
            . ~/.bashrc
            conda activate phyre
-           pushd src/python/ &&  python3 setup.py sdist bdist_wheel --plat-name manylinux1_x86_64
+           pushd src/python/ && python setup.py sdist bdist_wheel --plat-name manylinux1_x86_64
 
       # Test wheel in empty conda env
       - run:
