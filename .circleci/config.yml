@@ -5,7 +5,7 @@ version: 2.1
 jobs:
   yapf-formatting:
     docker:
-      - image: continuumio/miniconda3:4.6.14
+      - image: continuumio/miniconda3:4.7.10
     steps:
       - checkout
       # Check yapf formatting

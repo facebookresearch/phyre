@@ -2,7 +2,7 @@
 
  The simplest way to install PHYRE is via pip. As PHYRE requires Python version 3.6, we recommend installing PHYRE inside a virtual environment, e.g. using [Conda](https://docs.conda.io/en/latest/).
 
- We provide PHYRE as a pip package for Linux for python version 3.6, 3.7, 3.8, and 3.9.10.
+ We provide PHYRE as a pip package for Linux for python version 3.6, 3.7, 3.8, and 3.9.
 
 ```(bash)
 conda create -n phyre python=3.6  # Or other version.
